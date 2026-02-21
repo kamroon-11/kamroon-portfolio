@@ -1,0 +1,9 @@
+{
+  "projectId": "40e8bdcd-173a-4c3c-b954-d5e4c10d5584",
+  "createdAt": 1771669373616,
+  "version": "1.0",
+  "startupCommands": [
+    "bun install; bun run dev"
+  ],
+  "templateId": "nextjs"
+}

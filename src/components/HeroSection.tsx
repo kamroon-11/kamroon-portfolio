@@ -876,7 +876,27 @@ export default function HeroSection() {
 
               {/* Decorative stickers on profile card */}
               <div ref={stickersRef}>
-                {!isMobile && (
+                {isMobile ? (
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: "-12px",
+                      right: "-10px",
+                      width: "36px",
+                      height: "36px",
+                      borderRadius: "50%",
+                      background: "var(--mustard)",
+                      border: "3px solid var(--black)",
+                      boxShadow: "3px 3px 0 var(--black)",
+                      display: "grid",
+                      placeItems: "center",
+                      transform: "rotate(10deg)",
+                      zIndex: 5,
+                    }}
+                  >
+                    <span style={{ fontSize: "14px", fontWeight: 900 }}>✦</span>
+                  </div>
+                ) : (
                   <>
                     <div
                       style={{

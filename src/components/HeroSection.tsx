@@ -141,8 +141,8 @@ function SponsoredAdCarousel({ isMobile }: { isMobile: boolean }) {
         background: "var(--cream)",
         boxShadow: "4px 4px 0 var(--black)",
         overflow: "hidden",
-        width: isMobile ? "200px" : "160px",
-        maxWidth: "200px",
+        width: isMobile ? "160px" : "140px",
+        maxWidth: "160px",
         flexShrink: 0,
         margin: isMobile ? "0 auto" : "0",
       }}

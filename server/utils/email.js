@@ -54,7 +54,7 @@ const sendAdminNotification = async ({ name, email, message }) => {
 
   await transporter.sendMail({
     from: `"Portfolio Contact" <${process.env.FROM_EMAIL}>`,
-    to: process.env.ADMIN_EMAIL,
+    to: process.env.ADMIN_EMAIL || "kgurdev25@gmail.com",
     subject: `New message from ${name}`,
     html: `
       <div style="font-family: monospace; max-width: 600px; padding: 24px; border: 2px solid #0A0A0A;">

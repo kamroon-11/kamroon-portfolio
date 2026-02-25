@@ -1,93 +1,436 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
+import gsap from "gsap";
 
-interface ParallaxCard {
-  id: string;
-  style: React.CSSProperties;
-  children: React.ReactNode;
-}
-
-function use3DParallax(maxAngle = 6) {
+/* ─── 3D Tilt Hook ─── */
+function use3DTilt(maxAngle = 8) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
 
-    const onMouseMove = (e: MouseEvent) => {
-      const rect = el.getBoundingClientRect();
-      const cx = rect.left + rect.width / 2;
-      const cy = rect.top + rect.height / 2;
-      const dx = (e.clientX - cx) / (rect.width / 2);
-      const dy = (e.clientY - cy) / (rect.height / 2);
-      const rotX = -dy * maxAngle;
-      const rotY = dx * maxAngle;
-      el.style.transform = `rotateX(${rotX}deg) rotateY(${rotY}deg) translateZ(12px)`;
+    const onMove = (e: MouseEvent) => {
+      const r = el.getBoundingClientRect();
+      const dx = ((e.clientX - r.left) / r.width - 0.5) * 2;
+      const dy = ((e.clientY - r.top) / r.height - 0.5) * 2;
+      el.style.transform = `perspective(800px) rotateY(${dx * maxAngle}deg) rotateX(${-dy * maxAngle}deg) translateZ(10px)`;
+    };
+    const onLeave = () => {
+      el.style.transform = `perspective(800px) rotateY(0deg) rotateX(0deg) translateZ(0px)`;
     };
 
-    const onMouseLeave = () => {
-      el.style.transform = "rotateX(0deg) rotateY(0deg) translateZ(0px)";
-    };
-
-    el.addEventListener("mousemove", onMouseMove);
-    el.addEventListener("mouseleave", onMouseLeave);
+    el.addEventListener("mousemove", onMove);
+    el.addEventListener("mouseleave", onLeave);
     return () => {
-      el.removeEventListener("mousemove", onMouseMove);
-      el.removeEventListener("mouseleave", onMouseLeave);
+      el.removeEventListener("mousemove", onMove);
+      el.removeEventListener("mouseleave", onLeave);
     };
   }, [maxAngle]);
 
   return ref;
 }
 
-function Tilt3DCard({
+/* ─── Magnetic Button ─── */
+function MagneticButton({
   children,
   className,
   style,
+  onClick,
 }: {
   children: React.ReactNode;
   className?: string;
   style?: React.CSSProperties;
+  onClick?: () => void;
 }) {
-  const ref = use3DParallax(6);
+  const ref = useRef<HTMLButtonElement>(null);
+
+  const onMove = useCallback((e: React.MouseEvent) => {
+    const el = ref.current;
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    const dx = e.clientX - (r.left + r.width / 2);
+    const dy = e.clientY - (r.top + r.height / 2);
+    gsap.to(el, { x: dx * 0.3, y: dy * 0.3, duration: 0.3, ease: "power2.out" });
+  }, []);
+
+  const onLeave = useCallback(() => {
+    const el = ref.current;
+    if (!el) return;
+    gsap.to(el, { x: 0, y: 0, duration: 0.5, ease: "elastic.out(1, 0.4)" });
+  }, []);
+
   return (
-    <div
+    <button
       ref={ref}
       className={className}
-      style={{
-        ...style,
-        transformStyle: "preserve-3d",
-        transition: "transform 0.3s cubic-bezier(0.23, 1, 0.32, 1)",
-      }}
+      style={style}
+      onClick={onClick}
+      onMouseMove={onMove}
+      onMouseLeave={onLeave}
     >
       {children}
+    </button>
+  );
+}
+
+/* ─── Floating Tag ─── */
+function FloatingTag({
+  label,
+  style,
+  delay = 0,
+}: {
+  label: string;
+  style?: React.CSSProperties;
+  delay?: number;
+}) {
+  const ref = useRef<HTMLSpanElement>(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    gsap.to(el, {
+      y: -10,
+      rotation: "+=2",
+      duration: 2 + Math.random(),
+      ease: "sine.inOut",
+      yoyo: true,
+      repeat: -1,
+      delay,
+    });
+  }, [delay]);
+
+  return (
+    <span
+      ref={ref}
+      className="hero-floating-tag"
+      style={{
+        position: "absolute",
+        fontSize: "10px",
+        fontWeight: 800,
+        letterSpacing: "0.1em",
+        textTransform: "uppercase",
+        background: "var(--mustard)",
+        border: "3px solid var(--black)",
+        padding: "6px 12px",
+        boxShadow: "3px 3px 0 var(--black)",
+        whiteSpace: "nowrap",
+        zIndex: 5,
+        ...style,
+      }}
+    >
+      {label}
+    </span>
+  );
+}
+
+/* ─── Sponsored Ad Video Carousel ─── */
+const adVideos = [
+  { src: encodeURI("/From KlickPin CF Found a video I want you to see!.mp4"), label: "Showcase Collage" },
+  { src: encodeURI("/From KlickPin CF Pin on Phone.mp4"), label: "Pin on Phone" },
+  { src: encodeURI("/From KlickPin CF \u041f\u0438\u043d \u043e\u0442 \u043f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044f Tor Stehula \u043d\u0430 \u0434\u043e\u0441\u043a\u0435 Once a year go some place youve never been _ \u0416\u0438\u0432\u043e\u043f\u0438\u0441\u043d\u044b\u0435 \u043f\u0435\u0439\u0437\u0430\u0436\u0438 \u041f\u0443\u0442\u0435\u0448\u0435\u0441\u0442\u0432\u0438\u0435 \u0432 \u044f\u043f\u043e\u043d\u0438\u044e \u041f\u0435\u0439\u0437\u0430\u0436\u0438Agafonov-max avatar link.mp4"), label: "Scenic Journey" },
+];
+
+function SponsoredAdCarousel({ isMobile }: { isMobile: boolean }) {
+  const [current, setCurrent] = useState(0);
+  const trackRef = useRef<HTMLDivElement>(null);
+
+  /* Auto-swipe every 4s */
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrent((prev) => (prev + 1) % adVideos.length);
+    }, 4000);
+    return () => clearInterval(timer);
+  }, []);
+
+  /* Animate slide */
+  useEffect(() => {
+    if (trackRef.current) {
+      gsap.to(trackRef.current, {
+        x: `${-current * 100}%`,
+        duration: 0.6,
+        ease: "power3.inOut",
+      });
+    }
+  }, [current]);
+
+  return (
+    <div
+      style={{
+        border: "4px solid var(--black)",
+        borderRadius: "14px",
+        background: "var(--cream)",
+        boxShadow: "6px 6px 0 var(--black)",
+        overflow: "hidden",
+        width: isMobile ? "280px" : "240px",
+        flexShrink: 0,
+        margin: isMobile ? "0 auto" : "0",
+      }}
+    >
+      {/* Top badges row */}
+      <div
+        style={{
+          display: "flex",
+          gap: "6px",
+          alignItems: "center",
+          padding: "10px 12px",
+          borderBottom: "3px solid var(--black)",
+          flexWrap: "wrap",
+        }}
+      >
+        {["Sponsored", "Ad"].map((t, i) => (
+          <span
+            key={i}
+            style={{
+              fontSize: "9px",
+              fontWeight: 800,
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+              background: "var(--mustard)",
+              border: "2px solid var(--black)",
+              padding: "4px 8px",
+              boxShadow: "2px 2px 0 var(--black)",
+            }}
+          >
+            {t}
+          </span>
+        ))}
+        <span
+          style={{
+            fontFamily: "Courier New, monospace",
+            fontSize: "9px",
+            fontWeight: 700,
+            letterSpacing: "0.06em",
+            opacity: 0.5,
+          }}
+        >
+          Showcase
+        </span>
+      </div>
+
+      {/* Video slider */}
+      <div style={{ overflow: "hidden", position: "relative" }}>
+        <div
+          ref={trackRef}
+          style={{
+            display: "flex",
+            width: `${adVideos.length * 100}%`,
+          }}
+        >
+          {adVideos.map((vid, i) => (
+            <div key={i} style={{ width: "100%", flexShrink: 0 }}>
+              <video
+                src={vid.src}
+                autoPlay
+                muted
+                loop
+                playsInline
+                controls={false}
+                controlsList="nodownload noplaybackrate nofullscreen"
+                onContextMenu={(e) => e.preventDefault()}
+                preload="metadata"
+                style={{
+                  width: "100%",
+                  height: isMobile ? "200px" : "220px",
+                  objectFit: "cover",
+                  display: "block",
+                }}
+              />
+            </div>
+          ))}
+        </div>
+
+        {/* Current label overlay */}
+        <div
+          style={{
+            position: "absolute",
+            bottom: "10px",
+            left: "10px",
+            background: "var(--black)",
+            color: "var(--mustard)",
+            border: "2px solid var(--black)",
+            padding: "3px 8px",
+            fontSize: "9px",
+            fontWeight: 800,
+            letterSpacing: "0.08em",
+            textTransform: "uppercase",
+          }}
+        >
+          ▶ {adVideos[current].label}
+        </div>
+      </div>
+
+      {/* Bottom bar */}
+      <div
+        style={{
+          borderTop: "3px solid var(--black)",
+          padding: "10px 12px",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
+        {/* Slide dots */}
+        <div style={{ display: "flex", gap: "6px" }}>
+          {adVideos.map((_, i) => (
+            <div
+              key={i}
+              onClick={() => setCurrent(i)}
+              style={{
+                width: i === current ? "20px" : "8px",
+                height: "8px",
+                background: i === current ? "var(--mustard)" : "var(--cream-dark)",
+                border: "2px solid var(--black)",
+                cursor: "pointer",
+                transition: "all 0.3s ease",
+              }}
+            />
+          ))}
+        </div>
+
+        <button
+          className="nb-btn"
+          style={{ padding: "5px 10px", fontSize: "9px" }}
+          onClick={() =>
+            document.getElementById("projects")?.scrollIntoView({ behavior: "smooth" })
+          }
+        >
+          Play All
+        </button>
+      </div>
     </div>
   );
 }
 
+/* ─── Main Hero ─── */
 export default function HeroSection() {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-  const [hasEntered, setHasEntered] = useState(false);
+  const sectionRef = useRef<HTMLElement>(null);
+  const nameRef = useRef<HTMLDivElement>(null);
+  const subtitleRef = useRef<HTMLDivElement>(null);
+  const taglineRef = useRef<HTMLDivElement>(null);
+  const ctaRef = useRef<HTMLDivElement>(null);
+  const cardRef = use3DTilt(10);
+  const badgeRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const stickersRef = useRef<HTMLDivElement>(null);
+  const sponsoredRef = useRef<HTMLDivElement>(null);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
-    setHasEntered(true);
-    const onMouseMove = (e: MouseEvent) => {
-      const x = (e.clientX / window.innerWidth - 0.5) * 2;
-      const y = (e.clientY / window.innerHeight - 0.5) * 2;
-      setMousePos({ x, y });
-    };
-    window.addEventListener("mousemove", onMouseMove);
-    return () => window.removeEventListener("mousemove", onMouseMove);
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
   }, []);
 
-  const parallaxStyle = (strength: number): React.CSSProperties => ({
-    transform: `translate(${mousePos.x * strength}px, ${mousePos.y * strength}px)`,
-    transition: "transform 0.6s cubic-bezier(0.23, 1, 0.32, 1)",
+  /* GSAP timeline */
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      const tl = gsap.timeline({ defaults: { ease: "power4.out" } });
+
+      /* Name letters */
+      const letters = nameRef.current?.querySelectorAll(".hero-letter");
+      if (letters) {
+        gsap.set(letters, { y: 120, opacity: 0, rotateX: -90 });
+        tl.to(letters, {
+          y: 0,
+          opacity: 1,
+          rotateX: 0,
+          duration: 1,
+          stagger: 0.06,
+          ease: "back.out(1.7)",
+        });
+      }
+
+      /* Subtitle */
+      if (subtitleRef.current) {
+        gsap.set(subtitleRef.current, { y: 40, opacity: 0 });
+        tl.to(subtitleRef.current, { y: 0, opacity: 1, duration: 0.7 }, "-=0.5");
+      }
+
+      /* Tagline */
+      if (taglineRef.current) {
+        gsap.set(taglineRef.current, { y: 30, opacity: 0 });
+        tl.to(taglineRef.current, { y: 0, opacity: 1, duration: 0.6 }, "-=0.3");
+      }
+
+      /* CTAs */
+      if (ctaRef.current) {
+        const btns = ctaRef.current.children;
+        gsap.set(btns, { y: 30, opacity: 0 });
+        tl.to(btns, { y: 0, opacity: 1, duration: 0.5, stagger: 0.12 }, "-=0.2");
+      }
+
+      /* Portrait card */
+      if (cardRef.current) {
+        gsap.set(cardRef.current, { x: 80, opacity: 0, rotation: 8 });
+        tl.to(cardRef.current, { x: 0, opacity: 1, rotation: -2, duration: 0.9, ease: "elastic.out(1, 0.6)" }, "-=0.7");
+      }
+
+      /* Sponsored ad carousel */
+      if (sponsoredRef.current) {
+        gsap.set(sponsoredRef.current, { x: -60, opacity: 0, scale: 0.85, rotation: -6 });
+        tl.to(sponsoredRef.current, {
+          x: 0,
+          opacity: 1,
+          scale: 1,
+          rotation: 0,
+          duration: 0.9,
+          ease: "elastic.out(1, 0.5)",
+        }, "-=0.6");
+      }
+
+
+      /* Badge */
+      if (badgeRef.current) {
+        gsap.set(badgeRef.current, { scale: 0, rotation: -12 });
+        tl.to(badgeRef.current, { scale: 1, rotation: -6, duration: 0.6, ease: "back.out(2)" }, "-=0.4");
+      }
+
+      /* Stickers */
+      if (stickersRef.current) {
+        const stickers = stickersRef.current.children;
+        gsap.set(stickers, { scale: 0, opacity: 0 });
+        tl.to(stickers, { scale: 1, opacity: 1, duration: 0.5, stagger: 0.08, ease: "back.out(3)" }, "-=0.3");
+      }
+
+      /* Scroll indicator */
+      if (scrollRef.current) {
+        gsap.set(scrollRef.current, { opacity: 0 });
+        tl.to(scrollRef.current, { opacity: 0.5, duration: 0.8 }, "-=0.2");
+      }
+    }, sectionRef);
+
+    return () => ctx.revert();
+  }, []);
+
+  /* Parallax on mouse */
+  const [mouse, setMouse] = useState({ x: 0, y: 0 });
+  useEffect(() => {
+    const onMove = (e: MouseEvent) => {
+      setMouse({
+        x: (e.clientX / window.innerWidth - 0.5) * 2,
+        y: (e.clientY / window.innerHeight - 0.5) * 2,
+      });
+    };
+    window.addEventListener("mousemove", onMove);
+    return () => window.removeEventListener("mousemove", onMove);
+  }, []);
+
+  const px = (s: number): React.CSSProperties => ({
+    transform: `translate(${mouse.x * s}px, ${mouse.y * s}px)`,
+    transition: "transform 0.5s cubic-bezier(0.23, 1, 0.32, 1)",
   });
+
+  const scrollTo = (id: string) =>
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+
+  const firstName = "KAR";
+  const lastName = "MAN";
 
   return (
     <section
+      ref={sectionRef}
       id="hero"
       style={{
         minHeight: "100vh",
@@ -97,78 +440,91 @@ export default function HeroSection() {
         display: "flex",
         flexDirection: "column",
         justifyContent: "center",
-        paddingTop: "68px",
       }}
     >
-      {/* Subtle grid texture */}
+      {/* ── Grid Texture ── */}
       <div
         style={{
           position: "absolute",
           inset: 0,
           backgroundImage:
             "linear-gradient(var(--cream-dark) 1px, transparent 1px), linear-gradient(90deg, var(--cream-dark) 1px, transparent 1px)",
-          backgroundSize: "80px 80px",
-          opacity: 0.5,
+          backgroundSize: "60px 60px",
+          opacity: 0.45,
           zIndex: 0,
         }}
       />
 
-      {/* Horizon gradient */}
+      {/* ── Diagonal accent stripe ── */}
       <div
         style={{
           position: "absolute",
-          bottom: 0,
-          left: 0,
-          right: 0,
-          height: "200px",
-          background:
-            "linear-gradient(to top, rgba(232,184,75,0.08), transparent)",
+          top: "-10%",
+          right: "-5%",
+          width: "50%",
+          height: "120%",
+          background: "var(--mustard)",
+          opacity: 0.06,
+          transform: "rotate(-12deg)",
           zIndex: 0,
         }}
       />
 
+      {/* ── Dot Grid Accent ── */}
       <div
-        ref={containerRef}
+        style={{
+          position: "absolute",
+          bottom: "5%",
+          left: "3%",
+          width: "200px",
+          height: "200px",
+          backgroundImage:
+            "radial-gradient(var(--black) 1.5px, transparent 1.5px)",
+          backgroundSize: "16px 16px",
+          opacity: 0.08,
+          zIndex: 0,
+        }}
+      />
+
+      {/* ── Main Container ── */}
+      <div
         style={{
           position: "relative",
           zIndex: 1,
           maxWidth: "1400px",
           margin: "0 auto",
-          padding: "60px 48px",
+          padding: isMobile ? "100px 20px 60px" : "120px 48px 60px",
           width: "100%",
         }}
       >
-        {/* Top row: Status badge + scroll hint */}
+        {/* Top Bar */}
         <div
           style={{
             display: "flex",
             justifyContent: "space-between",
-            alignItems: "flex-start",
-            marginBottom: "48px",
-            opacity: hasEntered ? 1 : 0,
-            transform: hasEntered ? "translateY(0)" : "translateY(-20px)",
-            transition: "all 0.8s cubic-bezier(0.16, 1, 0.3, 1)",
+            alignItems: "center",
+            marginBottom: isMobile ? "40px" : "56px",
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
             <div
               style={{
-                width: "8px",
-                height: "8px",
+                width: "10px",
+                height: "10px",
                 borderRadius: "50%",
-                background: "#4ade80",
-                boxShadow: "0 0 0 3px rgba(74,222,128,0.25)",
-                animation: "pulse 2s infinite",
+                background: "#22c55e",
+                border: "2px solid var(--black)",
+                boxShadow: "0 0 0 4px rgba(34,197,94,0.2)",
+                animation: "heroPulse 2s infinite",
               }}
             />
             <span
               style={{
                 fontFamily: "Courier New, monospace",
                 fontSize: "11px",
-                fontWeight: 600,
-                letterSpacing: "0.12em",
+                fontWeight: 700,
+                letterSpacing: "0.14em",
                 textTransform: "uppercase",
-                opacity: 0.6,
               }}
             >
               Available for work
@@ -181,380 +537,561 @@ export default function HeroSection() {
           </div>
         </div>
 
-        {/* Main composition */}
+        {/* ── Two Column Layout ── */}
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "1fr auto",
-            gap: "48px",
-            alignItems: "start",
-            perspective: "1200px",
+            gridTemplateColumns: isMobile ? "1fr" : "1fr 420px",
+            gap: isMobile ? "48px" : "32px",
+            alignItems: "center",
           }}
         >
-          {/* Left: Big name + tagline */}
-          <div>
-            {/* Name with 3D depth effect */}
+          {/* ─── LEFT: Typography + CTA ─── */}
+          <div style={{ ...px(-6) }}>
+            {/* Name */}
             <div
+              ref={nameRef}
               style={{
-                ...parallaxStyle(-8),
-                marginBottom: "32px",
+                marginBottom: "24px",
+                perspective: "600px",
               }}
             >
+              {/* Line 1: Solid fill */}
               <div
-                className="display-name"
                 style={{
-                  fontSize: "clamp(80px, 14vw, 200px)",
-                  color: "var(--black)",
-                  position: "relative",
-                  display: "inline-block",
-                  lineHeight: 0.85,
+                  display: "flex",
+                  overflow: "hidden",
+                  lineHeight: 0.9,
                 }}
               >
-                {/* Text shadow layering for 3D extrusion */}
-                <span
+                {firstName.split("").map((char, i) => (
+                  <span
+                    key={`f-${i}`}
+                    className="hero-letter"
+                    style={{
+                      fontSize: isMobile ? "clamp(64px, 18vw, 100px)" : "clamp(80px, 9vw, 140px)",
+                      fontWeight: 900,
+                      letterSpacing: "-0.04em",
+                      textTransform: "uppercase",
+                      color: "var(--black)",
+                      display: "inline-block",
+                      textShadow:
+                        "3px 3px 0 var(--mustard), 6px 6px 0 rgba(0,0,0,0.12)",
+                      fontFamily: "var(--font-space-grotesk), system-ui, sans-serif",
+                    }}
+                  >
+                    {char}
+                  </span>
+                ))}
+              </div>
+
+              {/* Line 2: Outline stroke */}
+              <div
+                style={{
+                  display: "flex",
+                  overflow: "hidden",
+                  lineHeight: 0.9,
+                  marginTop: "-4px",
+                }}
+              >
+                {lastName.split("").map((char, i) => (
+                  <span
+                    key={`l-${i}`}
+                    className="hero-letter"
+                    style={{
+                      fontSize: isMobile ? "clamp(64px, 18vw, 100px)" : "clamp(80px, 9vw, 140px)",
+                      fontWeight: 900,
+                      letterSpacing: "-0.04em",
+                      textTransform: "uppercase",
+                      color: "transparent",
+                      WebkitTextStroke: "3px var(--black)",
+                      display: "inline-block",
+                      fontFamily: "var(--font-space-grotesk), system-ui, sans-serif",
+                    }}
+                  >
+                    {char}
+                  </span>
+                ))}
+
+                {/* Inline decorative block */}
+                <div
+                  ref={badgeRef}
                   style={{
-                    position: "relative",
-                    display: "block",
-                    textShadow:
-                      "2px 2px 0 #d4a832, 4px 4px 0 #c99a2e, 6px 6px 0 rgba(0,0,0,0.15)",
-                    opacity: hasEntered ? 1 : 0,
-                    transform: hasEntered ? "translateX(0)" : "translateX(-60px)",
-                    transition:
-                      "opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.1s, transform 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.1s",
+                    alignSelf: "flex-end",
+                    marginLeft: "16px",
+                    marginBottom: "8px",
+                    background: "var(--mustard)",
+                    border: "3px solid var(--black)",
+                    boxShadow: "4px 4px 0 var(--black)",
+                    padding: "8px 14px",
+                    transform: "rotate(-6deg)",
+                    whiteSpace: "nowrap",
                   }}
                 >
-                  KAR
-                </span>
-                <span
-                  style={{
-                    position: "relative",
-                    display: "block",
-                    color: "transparent",
-                    WebkitTextStroke: "3px var(--black)",
-                    textShadow: "none",
-                    opacity: hasEntered ? 1 : 0,
-                    transform: hasEntered ? "translateX(0)" : "translateX(60px)",
-                    transition:
-                      "opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.2s, transform 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.2s",
-                  }}
-                >
-                  MAN
-                </span>
+                  <span
+                    style={{
+                      fontSize: "10px",
+                      fontWeight: 800,
+                      letterSpacing: "0.12em",
+                      textTransform: "uppercase",
+                      fontFamily: "Courier New, monospace",
+                    }}
+                  >
+                    Creative Dev ✦
+                  </span>
+                </div>
               </div>
             </div>
 
-            {/* Tagline row */}
+            {/* Role subtitle */}
             <div
+              ref={subtitleRef}
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: "20px",
-                marginBottom: "40px",
-                opacity: hasEntered ? 1 : 0,
-                transform: hasEntered ? "translateY(0)" : "translateY(20px)",
-                transition: "all 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.4s",
+                gap: "16px",
+                marginBottom: "24px",
               }}
             >
               <div
                 style={{
-                  width: "60px",
-                  height: "3px",
+                  width: "48px",
+                  height: "4px",
                   background: "var(--mustard)",
-                  border: "none",
+                  border: "2px solid var(--black)",
                 }}
               />
               <p
                 style={{
-                  fontSize: "16px",
+                  fontSize: isMobile ? "15px" : "17px",
                   fontWeight: 500,
-                  letterSpacing: "0.04em",
-                  opacity: 0.75,
-                  maxWidth: "420px",
-                  lineHeight: 1.6,
+                  letterSpacing: "0.03em",
+                  lineHeight: 1.7,
+                  maxWidth: "460px",
+                  opacity: 0.8,
                 }}
               >
-                Creative Developer & Design Engineer. I build digital experiences that live at the intersection of structure and depth.
+                Creative Developer & Design Engineer — I build digital
+                experiences that live at the intersection of{" "}
+                <span
+                  style={{
+                    background: "var(--mustard)",
+                    padding: "1px 6px",
+                    border: "2px solid var(--black)",
+                    fontWeight: 700,
+                  }}
+                >
+                  structure
+                </span>{" "}
+                and{" "}
+                <span
+                  style={{
+                    background: "var(--black)",
+                    color: "var(--mustard)",
+                    padding: "1px 6px",
+                    border: "2px solid var(--black)",
+                    fontWeight: 700,
+                  }}
+                >
+                  depth
+                </span>
+                .
               </p>
             </div>
 
-            {/* CTA buttons */}
+            {/* Tagline */}
             <div
+              ref={taglineRef}
+              style={{
+                marginBottom: "32px",
+                display: "flex",
+                gap: "8px",
+                flexWrap: "wrap",
+              }}
+            >
+              {["UI / UX", "3D Web", "Motion Design", "Full-Stack"].map(
+                (tag) => (
+                  <span
+                    key={tag}
+                    style={{
+                      fontSize: "11px",
+                      fontWeight: 700,
+                      letterSpacing: "0.08em",
+                      textTransform: "uppercase",
+                      border: "2px solid var(--black)",
+                      padding: "6px 14px",
+                      background: "var(--cream)",
+                      boxShadow: "3px 3px 0 var(--black)",
+                    }}
+                  >
+                    {tag}
+                  </span>
+                )
+              )}
+            </div>
+
+            {/* CTA Buttons */}
+            <div
+              ref={ctaRef}
               style={{
                 display: "flex",
                 gap: "16px",
                 flexWrap: "wrap",
-                opacity: hasEntered ? 1 : 0,
-                transform: hasEntered ? "translateY(0)" : "translateY(20px)",
-                transition: "all 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.5s",
               }}
             >
-              <button
+              <MagneticButton
                 className="nb-btn"
-                style={{ padding: "14px 28px", fontSize: "12px" }}
-                onClick={() => document.getElementById("projects")?.scrollIntoView({ behavior: "smooth" })}
+                style={{
+                  padding: "16px 32px",
+                  fontSize: "13px",
+                }}
+                onClick={() => scrollTo("projects")}
               >
                 View Projects ↘
-              </button>
-              <button
+              </MagneticButton>
+              <MagneticButton
                 className="nb-btn-outline"
-                style={{ padding: "14px 28px", fontSize: "12px" }}
-                onClick={() => document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" })}
+                style={{
+                  padding: "16px 32px",
+                  fontSize: "13px",
+                }}
+                onClick={() => scrollTo("contact")}
               >
                 Get In Touch →
-              </button>
+              </MagneticButton>
             </div>
           </div>
 
-          {/* Right: Floating cards composition */}
+          {/* ─── RIGHT: Profile + Sponsored Ad ─── */}
           <div
             style={{
+              position: "relative",
               display: "flex",
-              flexDirection: "column",
-              gap: "16px",
-              alignItems: "flex-end",
-              ...parallaxStyle(6),
-              opacity: hasEntered ? 1 : 0,
-              transition: "opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.3s",
+              gap: isMobile ? "20px" : "20px",
+              flexDirection: isMobile ? "column" : "row",
+              alignItems: "flex-start",
+              marginLeft: isMobile ? "0" : "-120px",
             }}
           >
-            {/* Profile card */}
-            <Tilt3DCard
-              className="nb-card-mustard float-anim"
-              style={{
-                padding: "24px",
-                width: "260px",
-                position: "relative",
-                "--rot": "-2deg",
-              } as React.CSSProperties}
-            >
-              {/* Avatar placeholder */}
-              <div
-                style={{
-                  width: "72px",
-                  height: "72px",
-                  background: "var(--black)",
-                  border: "3px solid var(--black)",
-                  borderRadius: "50%",
-                  marginBottom: "16px",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  color: "var(--mustard)",
-                  fontSize: "28px",
-                  fontWeight: 800,
-                }}
-              >
-                K
-              </div>
-              <div
-                style={{
-                  fontWeight: 800,
-                  fontSize: "18px",
-                  letterSpacing: "-0.02em",
-                  marginBottom: "4px",
-                }}
-              >
-                KARMAN
-              </div>
-              <div
-                style={{
-                  fontFamily: "Courier New, monospace",
-                  fontSize: "10px",
-                  fontWeight: 600,
-                  letterSpacing: "0.1em",
-                  textTransform: "uppercase",
-                  opacity: 0.6,
-                }}
-              >
-                Creative Developer
-              </div>
-              <div
-                style={{
-                  marginTop: "16px",
-                  display: "flex",
-                  gap: "8px",
-                }}
-              >
-                {["React", "Three.js", "GSAP"].map((t) => (
-                  <span key={t} className="tag" style={{ fontSize: "9px" }}>
-                    {t}
-                  </span>
-                ))}
-              </div>
-            </Tilt3DCard>
-
-            {/* Stats cards row */}
-            <div style={{ display: "flex", gap: "12px" }}>
-              <Tilt3DCard
-                className="nb-card float-anim-slow"
-                style={{
-                  padding: "20px",
-                  textAlign: "center",
-                  "--rx": "2deg",
-                  "--ry": "-3deg",
-                  animationDelay: "1s",
-                } as React.CSSProperties}
-              >
-                <div
-                  style={{
-                    fontSize: "36px",
-                    fontWeight: 800,
-                    letterSpacing: "-0.04em",
-                    color: "var(--black)",
-                    lineHeight: 1,
-                  }}
-                >
-                  5+
-                </div>
-                <div
-                  style={{
-                    fontFamily: "Courier New, monospace",
-                    fontSize: "9px",
-                    fontWeight: 600,
-                    letterSpacing: "0.1em",
-                    textTransform: "uppercase",
-                    opacity: 0.5,
-                    marginTop: "4px",
-                  }}
-                >
-                  Years Exp.
-                </div>
-              </Tilt3DCard>
-
-              <Tilt3DCard
-                className="nb-card-black float-anim-slow"
-                style={{
-                  padding: "20px",
-                  textAlign: "center",
-                  "--rx": "-2deg",
-                  "--ry": "3deg",
-                  animationDelay: "1.5s",
-                } as React.CSSProperties}
-              >
-                <div
-                  style={{
-                    fontSize: "36px",
-                    fontWeight: 800,
-                    letterSpacing: "-0.04em",
-                    color: "var(--mustard)",
-                    lineHeight: 1,
-                  }}
-                >
-                  48
-                </div>
-                <div
-                  style={{
-                    fontFamily: "Courier New, monospace",
-                    fontSize: "9px",
-                    fontWeight: 600,
-                    letterSpacing: "0.1em",
-                    textTransform: "uppercase",
-                    opacity: 0.5,
-                    marginTop: "4px",
-                    color: "var(--cream)",
-                  }}
-                >
-                  Projects Done
-                </div>
-              </Tilt3DCard>
+            {/* ── Sponsored Ad — Video Carousel (left side) ── */}
+            <div ref={sponsoredRef}>
+              <SponsoredAdCarousel isMobile={isMobile} />
             </div>
 
-            {/* Location + availability */}
-            <Tilt3DCard
-              className="nb-card float-anim"
+            {/* Portrait Card */}
+            <div
+              ref={cardRef}
               style={{
-                padding: "16px 20px",
-                width: "260px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                animationDelay: "0.5s",
-                "--rot": "1deg",
-              } as React.CSSProperties}
+                position: "relative",
+                border: "4px solid var(--black)",
+                borderRadius: "16px",
+                background: "var(--cream)",
+                boxShadow: "8px 8px 0 var(--black)",
+                padding: "16px",
+                width: isMobile ? "280px" : "280px",
+                flexShrink: 0,
+                margin: isMobile ? "0 auto" : "0",
+                transformStyle: "preserve-3d",
+                transition: "transform 0.4s cubic-bezier(0.23, 1, 0.32, 1)",
+                zIndex: 3,
+              }}
             >
-              <div>
-                <div
-                  style={{
-                    fontFamily: "Courier New, monospace",
-                    fontSize: "9px",
-                    fontWeight: 600,
-                    letterSpacing: "0.1em",
-                    textTransform: "uppercase",
-                    opacity: 0.5,
-                    marginBottom: "4px",
-                  }}
-                >
-                  Base
-                </div>
-                <div style={{ fontWeight: 700, fontSize: "14px" }}>
-                  New York, USA
-                </div>
-              </div>
+              {/* Image container */}
               <div
                 style={{
-                  width: "40px",
-                  height: "40px",
-                  background: "var(--mustard)",
-                  border: "2px solid var(--black)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: "18px",
+                  border: "3px solid var(--black)",
+                  borderRadius: "10px",
+                  overflow: "hidden",
+                  height: isMobile ? "280px" : "300px",
+                  position: "relative",
+                  background: "linear-gradient(135deg, #f1e9ff 0%, #fff8e7 100%)",
                 }}
               >
-                📍
+                {/* Fallback avatar */}
+                <div
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    display: "grid",
+                    placeItems: "center",
+                    zIndex: 0,
+                  }}
+                >
+                  <span
+                    style={{
+                      width: 80,
+                      height: 80,
+                      borderRadius: "50%",
+                      background: "var(--black)",
+                      color: "var(--mustard)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: 32,
+                      fontWeight: 900,
+                      border: "3px solid var(--black)",
+                      boxShadow: "4px 4px 0 var(--mustard)",
+                    }}
+                  >
+                    K
+                  </span>
+                </div>
+                <img
+                  src="/user.jpg"
+                  alt="Karman — Creative Developer"
+                  onError={(e) => {
+                    (e.currentTarget as HTMLImageElement).style.display = "none";
+                  }}
+                  style={{
+                    position: "relative",
+                    zIndex: 1,
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                    objectPosition: "center 30%",
+                    borderRadius: "8px",
+                  }}
+                />
               </div>
-            </Tilt3DCard>
+
+              {/* Card footer */}
+              <div style={{ marginTop: "14px" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <span
+                    style={{
+                      fontWeight: 800,
+                      fontSize: "13px",
+                      letterSpacing: "0.06em",
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    Karman
+                  </span>
+                  <span
+                    style={{
+                      fontSize: "9px",
+                      fontWeight: 700,
+                      letterSpacing: "0.1em",
+                      textTransform: "uppercase",
+                      background: "#22c55e",
+                      color: "var(--black)",
+                      border: "2px solid var(--black)",
+                      padding: "3px 8px",
+                      boxShadow: "2px 2px 0 var(--black)",
+                    }}
+                  >
+                    ● Online
+                  </span>
+                </div>
+                <div
+                  style={{
+                    display: "flex",
+                    gap: "6px",
+                    marginTop: "10px",
+                    flexWrap: "wrap",
+                  }}
+                >
+                  {["React", "Three.js", "TypeScript", "Next.js"].map((t) => (
+                    <span
+                      key={t}
+                      style={{
+                        fontSize: "9px",
+                        fontWeight: 800,
+                        letterSpacing: "0.08em",
+                        textTransform: "uppercase",
+                        background: "var(--mustard)",
+                        border: "2px solid var(--black)",
+                        padding: "4px 8px",
+                        boxShadow: "2px 2px 0 var(--black)",
+                      }}
+                    >
+                      {t}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Decorative stickers on profile card */}
+              <div ref={stickersRef}>
+                {!isMobile && (
+                  <>
+                    <div
+                      style={{
+                        position: "absolute",
+                        top: "-24px",
+                        left: "-20px",
+                        width: "48px",
+                        height: "48px",
+                        borderRadius: "50%",
+                        background: "var(--mustard)",
+                        border: "3px solid var(--black)",
+                        boxShadow: "3px 3px 0 var(--black)",
+                        display: "grid",
+                        placeItems: "center",
+                        transform: "rotate(12deg)",
+                        zIndex: 5,
+                      }}
+                    >
+                      <span style={{ fontSize: "16px", fontWeight: 900 }}>✦</span>
+                    </div>
+
+                    <div
+                      style={{
+                        position: "absolute",
+                        bottom: "-14px",
+                        right: "-14px",
+                        background: "var(--black)",
+                        color: "var(--mustard)",
+                        border: "3px solid var(--black)",
+                        boxShadow: "3px 3px 0 var(--mustard)",
+                        padding: "5px 10px",
+                        fontSize: "10px",
+                        fontWeight: 800,
+                        letterSpacing: "0.08em",
+                        textTransform: "uppercase",
+                        transform: "rotate(-4deg)",
+                        zIndex: 5,
+                      }}
+                    >
+                      ← Hire Me
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* Floating skill tags */}
+            {!isMobile && (
+              <>
+                <FloatingTag
+                  label="GSAP"
+                  delay={0}
+                  style={{ top: "-16px", right: "-20px", transform: "rotate(6deg)" }}
+                />
+                <FloatingTag
+                  label="Framer"
+                  delay={0.4}
+                  style={{ top: "50%", right: "-50px", transform: "rotate(-4deg)" }}
+                />
+              </>
+            )}
           </div>
         </div>
 
-        {/* Scroll indicator */}
+        {/* ── Stats Row ── */}
         <div
           style={{
-            position: "absolute",
-            bottom: "40px",
-            left: "50%",
-            transform: "translateX(-50%)",
             display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: "8px",
-            opacity: hasEntered ? 0.5 : 0,
-            transition: "opacity 1s 1s",
+            gap: isMobile ? "16px" : "32px",
+            marginTop: isMobile ? "48px" : "64px",
+            flexWrap: "wrap",
+            justifyContent: isMobile ? "center" : "flex-start",
           }}
         >
-          <span
-            style={{
-              fontFamily: "Courier New, monospace",
-              fontSize: "9px",
-              fontWeight: 600,
-              letterSpacing: "0.14em",
-              textTransform: "uppercase",
-            }}
-          >
-            Scroll
-          </span>
-          <div
-            style={{
-              width: "1px",
-              height: "48px",
-              background: "var(--black)",
-              animation: "scrollLine 1.5s ease-in-out infinite",
-            }}
-          />
+          {[
+            { number: "3+", label: "Years Experience" },
+            { number: "25+", label: "Projects Delivered" },
+            { number: "12k", label: "Lines of Joy" },
+          ].map((stat, i) => (
+            <div
+              key={stat.label}
+              style={{
+                border: "3px solid var(--black)",
+                background: i === 0 ? "var(--mustard)" : "var(--cream)",
+                boxShadow: "4px 4px 0 var(--black)",
+                padding: isMobile ? "14px 20px" : "16px 28px",
+                minWidth: "140px",
+                textAlign: "center",
+              }}
+            >
+              <div
+                style={{
+                  fontSize: isMobile ? "28px" : "36px",
+                  fontWeight: 900,
+                  letterSpacing: "-0.02em",
+                  lineHeight: 1,
+                }}
+              >
+                {stat.number}
+              </div>
+              <div
+                style={{
+                  fontSize: "10px",
+                  fontWeight: 700,
+                  letterSpacing: "0.1em",
+                  textTransform: "uppercase",
+                  marginTop: "6px",
+                  opacity: 0.6,
+                  fontFamily: "Courier New, monospace",
+                }}
+              >
+                {stat.label}
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 
+      {/* ── Scroll Indicator ── */}
+      <div
+        ref={scrollRef}
+        style={{
+          position: "absolute",
+          bottom: "28px",
+          left: "50%",
+          transform: "translateX(-50%)",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: "8px",
+          zIndex: 2,
+        }}
+      >
+        <span
+          style={{
+            fontFamily: "Courier New, monospace",
+            fontSize: "9px",
+            fontWeight: 700,
+            letterSpacing: "0.16em",
+            textTransform: "uppercase",
+          }}
+        >
+          Scroll
+        </span>
+        <div
+          style={{
+            width: "1px",
+            height: "40px",
+            background: "var(--black)",
+            animation: "heroScrollLine 1.5s ease-in-out infinite",
+          }}
+        />
+      </div>
+
+      {/* ── Inline Keyframes ── */}
       <style>{`
-        @keyframes pulse {
-          0%, 100% { box-shadow: 0 0 0 3px rgba(74,222,128,0.25); }
-          50% { box-shadow: 0 0 0 6px rgba(74,222,128,0.1); }
+        @keyframes heroPulse {
+          0%, 100% { box-shadow: 0 0 0 4px rgba(34,197,94,0.2); }
+          50% { box-shadow: 0 0 0 8px rgba(34,197,94,0.08); }
         }
-        @keyframes scrollLine {
+        @keyframes heroScrollLine {
           0% { transform: scaleY(0); transform-origin: top; }
           50% { transform: scaleY(1); transform-origin: top; }
           51% { transform: scaleY(1); transform-origin: bottom; }
           100% { transform: scaleY(0); transform-origin: bottom; }
+        }
+
+        /* Responsive overrides */
+        @media (max-width: 768px) {
+          .hero-floating-tag {
+            display: none !important;
+          }
         }
       `}</style>
     </section>

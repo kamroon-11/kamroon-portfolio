@@ -6,11 +6,34 @@ export default function ContactSection() {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
   const [sent, setSent] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSent(true);
-    setTimeout(() => setSent(false), 4000);
+    setError(null);
+    setSending(true);
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, message }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data?.message || "Failed to send message");
+      }
+      setSent(true);
+      setName("");
+      setEmail("");
+      setMessage("");
+      setTimeout(() => setSent(false), 5000);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Something went wrong. Please try again.";
+      setError(msg);
+    } finally {
+      setSending(false);
+    }
   };
 
   const inputStyle: React.CSSProperties = {
@@ -65,7 +88,7 @@ export default function ContactSection() {
                 className="display-name"
                 style={{ fontSize: "clamp(36px, 5vw, 68px)", marginBottom: "24px" }}
               >
-                Let's Build Something
+                Let&apos;s Build Something
               </h2>
               <p
                 style={{
@@ -82,8 +105,8 @@ export default function ContactSection() {
               {/* Contact details */}
               <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
                 {[
-                  { label: "Email", value: "karman@studio.io" },
-                  { label: "Location", value: "New York, USA" },
+                  { label: "Email", value: "kgurdev25@gmail.com" },
+                  { label: "Location", value: "Delhi, India" },
                   { label: "Available", value: "Q1 2026 — Booking Open" },
                 ].map((item) => (
                   <div key={item.label}>
@@ -110,9 +133,14 @@ export default function ContactSection() {
 
             {/* Social links */}
             <div style={{ display: "flex", gap: "12px", marginTop: "40px" }}>
-              {["GitHub", "LinkedIn", "Twitter", "Dribbble"].map((platform) => (
+              {[
+                { label: "GitHub", href: "https://github.com/kamroon-11" },
+                { label: "Instagram", href: "https://www.instagram.com/kxrmxn.77/" },
+                { label: "Twitter", href: "https://twitter.com/karman" },
+                { label: "Dribbble", href: "https://dribbble.com/karman" },
+              ].map(({ label, href }) => (
                 <button
-                  key={platform}
+                  key={label}
                   style={{
                     border: "2px solid var(--black)",
                     background: "transparent",
@@ -133,8 +161,9 @@ export default function ContactSection() {
                     e.currentTarget.style.background = "transparent";
                     e.currentTarget.style.color = "var(--black)";
                   }}
+                  onClick={() => window.open(href, "_blank", "noopener,noreferrer")}
                 >
-                  {platform}
+                  {label}
                 </button>
               ))}
             </div>
@@ -191,7 +220,7 @@ export default function ContactSection() {
                     textAlign: "center",
                   }}
                 >
-                  I'll get back to you within 24 hours.
+                  I&apos;ll get back to you within 24 hours.
                 </p>
               </div>
             ) : (
@@ -207,6 +236,19 @@ export default function ContactSection() {
                 >
                   Send a Message
                 </div>
+                {error && (
+                  <div
+                    style={{
+                      border: "2px solid var(--mustard)",
+                      color: "var(--cream)",
+                      padding: "10px 12px",
+                      marginBottom: "12px",
+                      fontSize: "12px",
+                    }}
+                  >
+                    {error}
+                  </div>
+                )}
 
                 <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
                   <div>
@@ -308,16 +350,17 @@ export default function ContactSection() {
 
                   <button
                     type="submit"
+                    disabled={sending}
                     style={{
                       border: "3px solid var(--mustard)",
-                      background: "var(--mustard)",
+                      background: sending ? "rgba(232,184,75,0.6)" : "var(--mustard)",
                       color: "var(--black)",
                       padding: "16px 32px",
                       fontWeight: 800,
                       fontSize: "12px",
                       letterSpacing: "0.12em",
                       textTransform: "uppercase",
-                      cursor: "none",
+                      cursor: sending ? "wait" : "none",
                       boxShadow: "4px 4px 0 rgba(255,255,255,0.15)",
                       transition: "all 0.2s ease",
                       display: "flex",
@@ -325,17 +368,20 @@ export default function ContactSection() {
                       gap: "8px",
                       justifyContent: "center",
                       marginTop: "8px",
+                      opacity: sending ? 0.7 : 1,
                     }}
                     onMouseEnter={e => {
-                      e.currentTarget.style.transform = "translate(-2px, -2px)";
-                      e.currentTarget.style.boxShadow = "6px 6px 0 rgba(255,255,255,0.2)";
+                      if (!sending) {
+                        e.currentTarget.style.transform = "translate(-2px, -2px)";
+                        e.currentTarget.style.boxShadow = "6px 6px 0 rgba(255,255,255,0.2)";
+                      }
                     }}
                     onMouseLeave={e => {
                       e.currentTarget.style.transform = "translate(0, 0)";
                       e.currentTarget.style.boxShadow = "4px 4px 0 rgba(255,255,255,0.15)";
                     }}
                   >
-                    Send Message →
+                    {sending ? "Sending..." : "Send Message →"}
                   </button>
                 </div>
               </form>

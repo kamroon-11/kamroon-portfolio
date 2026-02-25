@@ -1,5 +1,9 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+gsap.registerPlugin(ScrollTrigger);
 
 const services = [
   {
@@ -8,7 +12,6 @@ const services = [
     desc: "High-performance web experiences built with React, Next.js, and cutting-edge animation libraries. Pixel-perfect and buttery smooth.",
     icon: "⬡",
     tags: ["React", "Next.js", "GSAP"],
-    bg: "var(--cream)",
   },
   {
     number: "02",
@@ -16,7 +19,6 @@ const services = [
     desc: "Interactive 3D scenes, WebGL shaders, and cinematic scroll animations that turn your brand into an unforgettable experience.",
     icon: "◈",
     tags: ["Three.js", "R3F", "Framer"],
-    bg: "var(--mustard)",
   },
   {
     number: "03",
@@ -24,8 +26,6 @@ const services = [
     desc: "Structured, scalable design systems with clear tokens, components, and documentation that teams actually love using.",
     icon: "▦",
     tags: ["Figma", "Tailwind", "Storybook"],
-    bg: "var(--black)",
-    dark: true,
   },
   {
     number: "04",
@@ -33,92 +33,271 @@ const services = [
     desc: "Visual identities with depth and intention. From logo mark to motion guidelines — cohesive brand systems for modern companies.",
     icon: "◉",
     tags: ["Branding", "Typography", "Strategy"],
-    bg: "var(--cream)",
   },
 ];
 
-function useInView(threshold = 0.2) {
-  const ref = useRef<HTMLDivElement>(null);
-  const [visible, setVisible] = useState(false);
+const cardStyles: { bg: string; accent: string; dark?: boolean }[] = [
+  { bg: "var(--cream)", accent: "var(--mustard)" },
+  { bg: "var(--mustard)", accent: "var(--black)" },
+  { bg: "var(--black)", accent: "var(--mustard)", dark: true },
+  { bg: "var(--cream)", accent: "var(--black)" },
+];
+
+export default function ServicesSection() {
+  const sectionRef = useRef<HTMLElement>(null);
+  const headerRef = useRef<HTMLDivElement>(null);
+  const cardsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const obs = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) setVisible(true); },
-      { threshold }
-    );
-    if (ref.current) obs.observe(ref.current);
-    return () => obs.disconnect();
-  }, [threshold]);
+    const ctx = gsap.context(() => {
+      // Header animation
+      if (headerRef.current) {
+        const els = headerRef.current.children;
+        gsap.set(els, { y: 50, opacity: 0 });
+        ScrollTrigger.create({
+          trigger: headerRef.current,
+          start: "top 80%",
+          onEnter: () => {
+            gsap.to(els, {
+              y: 0,
+              opacity: 1,
+              duration: 0.8,
+              stagger: 0.12,
+              ease: "power4.out",
+            });
+          },
+        });
+      }
 
-  return { ref, visible };
-}
+      // Card animations
+      if (cardsRef.current) {
+        const cards = cardsRef.current.children;
+        gsap.set(cards, { y: 60, opacity: 0, rotation: (i) => (i % 2 === 0 ? -3 : 3) });
+        ScrollTrigger.create({
+          trigger: cardsRef.current,
+          start: "top 75%",
+          onEnter: () => {
+            gsap.to(cards, {
+              y: 0,
+              opacity: 1,
+              rotation: 0,
+              duration: 0.9,
+              stagger: 0.1,
+              ease: "back.out(1.4)",
+            });
+          },
+        });
+      }
+    }, sectionRef);
 
-function ServiceCard({
-  service,
-  index,
-}: {
-  service: (typeof services)[0];
-  index: number;
-}) {
-  const { ref, visible } = useInView(0.15);
-  const [hovered, setHovered] = useState(false);
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-
-  const onMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / rect.width - 0.5;
-    const y = (e.clientY - rect.top) / rect.height - 0.5;
-    setMousePos({ x, y });
-  };
+    return () => ctx.revert();
+  }, []);
 
   return (
-    <div
-      ref={ref}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => { setHovered(false); setMousePos({ x: 0, y: 0 }); }}
-      onMouseMove={onMouseMove}
+    <section
+      ref={sectionRef}
+      id="services"
       style={{
-        border: "3px solid var(--black)",
-        background: service.bg,
-        padding: "36px",
+        background: "var(--cream)",
+        borderTop: "3px solid var(--black)",
+        padding: "100px 24px",
         position: "relative",
         overflow: "hidden",
-        cursor: "none",
-        opacity: visible ? 1 : 0,
-        transform: visible
-          ? `perspective(800px) rotateX(${mousePos.y * -4}deg) rotateY(${mousePos.x * 4}deg) translateZ(${hovered ? "12px" : "0px"})`
-          : `translateY(40px)`,
-        boxShadow: hovered
-          ? "9px 9px 0px var(--black)"
-          : "6px 6px 0px var(--black)",
-        transition: `opacity 0.6s cubic-bezier(0.16,1,0.3,1) ${index * 0.1}s, transform 0.3s cubic-bezier(0.23,1,0.32,1), box-shadow 0.2s ease`,
-        transformStyle: "preserve-3d",
       }}
     >
-      {/* Number */}
+      {/* Decorative dot grid */}
       <div
         style={{
           position: "absolute",
-          top: "20px",
-          right: "24px",
+          top: "40px",
+          right: "40px",
+          width: "160px",
+          height: "160px",
+          backgroundImage: "radial-gradient(var(--black) 1.5px, transparent 1.5px)",
+          backgroundSize: "14px 14px",
+          opacity: 0.06,
+          zIndex: 0,
+        }}
+      />
+
+      <div style={{ maxWidth: "1400px", margin: "0 auto", position: "relative", zIndex: 1 }}>
+        {/* Header */}
+        <div ref={headerRef} style={{ marginBottom: "72px" }}>
+          <div className="section-label" style={{ marginBottom: "24px" }}>
+            <span>02</span>
+            <span>Services</span>
+          </div>
+
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-end",
+              flexWrap: "wrap",
+              gap: "24px",
+            }}
+          >
+            <h2
+              className="display-name"
+              style={{ fontSize: "clamp(44px, 7vw, 90px)" }}
+            >
+              What I Do
+            </h2>
+            <p
+              style={{
+                maxWidth: "340px",
+                fontSize: "14px",
+                lineHeight: 1.7,
+                opacity: 0.6,
+              }}
+            >
+              Specializing in the craft of interactive digital products — where
+              engineering meets design at maximum depth.
+            </p>
+          </div>
+
+          {/* Thick divider */}
+          <div
+            style={{
+              width: "100%",
+              height: "4px",
+              background: "var(--black)",
+              marginTop: "32px",
+            }}
+          />
+        </div>
+
+        {/* Service Cards */}
+        <div
+          ref={cardsRef}
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+            gap: "0px",
+          }}
+        >
+          {services.map((service, i) => {
+            const cs = cardStyles[i];
+            return (
+              <ServiceCard
+                key={service.number}
+                service={service}
+                bg={cs.bg}
+                accent={cs.accent}
+                dark={cs.dark}
+                index={i}
+              />
+            );
+          })}
+        </div>
+
+        {/* Bottom CTA strip */}
+        <div
+          style={{
+            border: "3px solid var(--black)",
+            borderTop: "none",
+            background: "var(--black)",
+            padding: "20px 32px",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            flexWrap: "wrap",
+            gap: "16px",
+          }}
+        >
+          <span
+            style={{
+              fontFamily: "Courier New, monospace",
+              fontSize: "10px",
+              fontWeight: 700,
+              letterSpacing: "0.14em",
+              textTransform: "uppercase",
+              color: "rgba(245,240,232,0.5)",
+            }}
+          >
+            ✦ Need something custom? Let&apos;s talk.
+          </span>
+          <button
+            className="nb-btn"
+            style={{ padding: "10px 20px", fontSize: "10px" }}
+            onClick={() =>
+              document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" })
+            }
+          >
+            Start a Project →
+          </button>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ─── Service Card ─── */
+function ServiceCard({
+  service,
+  bg,
+  accent,
+  dark,
+  index,
+}: {
+  service: (typeof services)[0];
+  bg: string;
+  accent: string;
+  dark?: boolean;
+  index: number;
+}) {
+  const [hovered, setHovered] = useState(false);
+  const textColor = dark ? "var(--cream)" : "var(--black)";
+  const tagBorder = dark ? "rgba(245,240,232,0.3)" : "var(--black)";
+  const tagBg = dark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.04)";
+
+  return (
+    <div
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        border: "3px solid var(--black)",
+        background: bg,
+        padding: "40px",
+        position: "relative",
+        cursor: "none",
+        overflow: "hidden",
+        transform: hovered ? "translate(-4px, -4px)" : "translate(0, 0)",
+        boxShadow: hovered ? "10px 10px 0px var(--black)" : "6px 6px 0px var(--black)",
+        transition: "transform 0.25s ease, box-shadow 0.25s ease",
+      }}
+    >
+      {/* Number watermark */}
+      <div
+        style={{
+          position: "absolute",
+          top: "16px",
+          right: "20px",
           fontFamily: "Courier New, monospace",
-          fontSize: "11px",
-          fontWeight: 600,
-          letterSpacing: "0.12em",
-          opacity: 0.3,
-          color: service.dark ? "var(--cream)" : "var(--black)",
+          fontSize: "72px",
+          fontWeight: 900,
+          color: accent,
+          opacity: 0.1,
+          lineHeight: 1,
+          pointerEvents: "none",
         }}
       >
         {service.number}
       </div>
 
-      {/* Icon */}
+      {/* Icon block */}
       <div
         style={{
-          fontSize: "40px",
-          marginBottom: "24px",
-          color: service.dark ? "var(--mustard)" : "var(--black)",
-          transform: hovered ? "translateZ(20px)" : "translateZ(0)",
+          width: "52px",
+          height: "52px",
+          background: accent,
+          border: `3px solid ${dark ? "var(--cream)" : "var(--black)"}`,
+          boxShadow: `3px 3px 0 ${dark ? "var(--cream)" : "var(--black)"}`,
+          display: "grid",
+          placeItems: "center",
+          fontSize: "24px",
+          marginBottom: "28px",
+          transform: hovered ? "rotate(-6deg) scale(1.1)" : "rotate(0deg)",
           transition: "transform 0.3s ease",
         }}
       >
@@ -128,25 +307,25 @@ function ServiceCard({
       {/* Title */}
       <h3
         style={{
-          fontSize: "22px",
+          fontSize: "24px",
           fontWeight: 800,
           letterSpacing: "-0.02em",
-          marginBottom: "12px",
-          color: service.dark ? "var(--cream)" : "var(--black)",
+          marginBottom: "14px",
+          color: textColor,
           lineHeight: 1.1,
         }}
       >
         {service.title}
       </h3>
 
-      {/* Desc */}
+      {/* Description */}
       <p
         style={{
           fontSize: "14px",
-          lineHeight: 1.65,
+          lineHeight: 1.7,
           opacity: 0.7,
-          marginBottom: "24px",
-          color: service.dark ? "var(--cream)" : "var(--black)",
+          marginBottom: "28px",
+          color: textColor,
         }}
       >
         {service.desc}
@@ -158,14 +337,15 @@ function ServiceCard({
           <span
             key={tag}
             style={{
-              border: `2px solid ${service.dark ? "var(--cream)" : "var(--black)"}`,
-              padding: "3px 10px",
+              border: `2px solid ${tagBorder}`,
+              padding: "4px 12px",
               fontSize: "10px",
-              fontWeight: 700,
+              fontWeight: 800,
               letterSpacing: "0.08em",
               textTransform: "uppercase",
-              background: service.dark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.05)",
-              color: service.dark ? "var(--cream)" : "var(--black)",
+              background: tagBg,
+              color: textColor,
+              boxShadow: `2px 2px 0 ${tagBorder}`,
             }}
           >
             {tag}
@@ -173,97 +353,18 @@ function ServiceCard({
         ))}
       </div>
 
-      {/* Hover accent line */}
+      {/* Accent fill bar on hover */}
       <div
         style={{
           position: "absolute",
           bottom: 0,
           left: 0,
-          height: "4px",
-          background: "var(--mustard)",
+          height: "5px",
+          background: accent,
           width: hovered ? "100%" : "0%",
-          transition: "width 0.4s cubic-bezier(0.16, 1, 0.3, 1)",
+          transition: "width 0.5s cubic-bezier(0.16, 1, 0.3, 1)",
         }}
       />
     </div>
-  );
-}
-
-export default function ServicesSection() {
-  const { ref, visible } = useInView(0.1);
-
-  return (
-    <section
-      id="services"
-      style={{
-        background: "var(--cream)",
-        borderTop: "3px solid var(--black)",
-        padding: "100px 48px",
-        maxWidth: "1400px",
-        margin: "0 auto",
-      }}
-    >
-      {/* Header */}
-      <div ref={ref} style={{ marginBottom: "64px" }}>
-        <div
-          className="section-label"
-          style={{
-            marginBottom: "24px",
-            opacity: visible ? 1 : 0,
-            transform: visible ? "translateX(0)" : "translateX(-20px)",
-            transition: "all 0.6s cubic-bezier(0.16, 1, 0.3, 1)",
-          }}
-        >
-          <span>02</span>
-          <span>Services</span>
-        </div>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "flex-end",
-            flexWrap: "wrap",
-            gap: "24px",
-          }}
-        >
-          <h2
-            className="display-name"
-            style={{
-              fontSize: "clamp(40px, 6vw, 80px)",
-              opacity: visible ? 1 : 0,
-              transform: visible ? "translateY(0)" : "translateY(30px)",
-              transition: "all 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.1s",
-            }}
-          >
-            What I Do
-          </h2>
-          <p
-            style={{
-              maxWidth: "320px",
-              fontSize: "14px",
-              lineHeight: 1.65,
-              opacity: visible ? 0.6 : 0,
-              transform: visible ? "translateY(0)" : "translateY(20px)",
-              transition: "all 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.2s",
-            }}
-          >
-            Specializing in the craft of interactive digital products — where engineering meets design at maximum depth.
-          </p>
-        </div>
-      </div>
-
-      {/* Cards grid */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-          gap: "0px",
-        }}
-      >
-        {services.map((service, i) => (
-          <ServiceCard key={service.number} service={service} index={i} />
-        ))}
-      </div>
-    </section>
   );
 }

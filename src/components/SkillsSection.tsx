@@ -1,5 +1,9 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+gsap.registerPlugin(ScrollTrigger);
 
 const skillCategories = [
   {
@@ -44,95 +48,85 @@ const skillCategories = [
   },
 ];
 
-function useInView(threshold = 0.2) {
-  const ref = useRef<HTMLDivElement>(null);
-  const [visible, setVisible] = useState(false);
-  useEffect(() => {
-    const obs = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) setVisible(true); },
-      { threshold }
-    );
-    if (ref.current) obs.observe(ref.current);
-    return () => obs.disconnect();
-  }, [threshold]);
-  return { ref, visible };
-}
-
-function SkillBar({ name, level, visible, delay }: { name: string; level: number; visible: boolean; delay: number }) {
-  return (
-    <div
-      style={{
-        opacity: visible ? 1 : 0,
-        transform: visible ? "translateX(0)" : "translateX(-20px)",
-        transition: `all 0.6s cubic-bezier(0.16,1,0.3,1) ${delay}s`,
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: "8px",
-        }}
-      >
-        <span
-          style={{
-            fontWeight: 700,
-            fontSize: "13px",
-            letterSpacing: "0.02em",
-          }}
-        >
-          {name}
-        </span>
-        <span
-          style={{
-            fontFamily: "Courier New, monospace",
-            fontSize: "11px",
-            fontWeight: 700,
-            color: "var(--mustard)",
-            letterSpacing: "0.05em",
-          }}
-        >
-          {level}%
-        </span>
-      </div>
-      <div className="progress-bar-track">
-        <div
-          className="progress-bar-fill"
-          style={{ width: visible ? `${level}%` : "0%" }}
-        />
-      </div>
-    </div>
-  );
-}
-
 export default function SkillsSection() {
-  const { ref: headerRef, visible: headerVisible } = useInView(0.1);
-  const { ref: gridRef, visible: gridVisible } = useInView(0.1);
+  const sectionRef = useRef<HTMLElement>(null);
+  const headerRef = useRef<HTMLDivElement>(null);
+  const gridRef = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      if (headerRef.current) {
+        const els = headerRef.current.children;
+        gsap.set(els, { y: 50, opacity: 0 });
+        ScrollTrigger.create({
+          trigger: headerRef.current,
+          start: "top 80%",
+          onEnter: () => {
+            gsap.to(els, { y: 0, opacity: 1, duration: 0.8, stagger: 0.12, ease: "power4.out" });
+          },
+        });
+      }
+
+      if (gridRef.current) {
+        const cards = gridRef.current.children;
+        gsap.set(cards, { y: 50, opacity: 0, scale: 0.95 });
+        ScrollTrigger.create({
+          trigger: gridRef.current,
+          start: "top 80%",
+          onEnter: () => {
+            setVisible(true);
+            gsap.to(cards, {
+              y: 0,
+              opacity: 1,
+              scale: 1,
+              duration: 0.8,
+              stagger: 0.1,
+              ease: "back.out(1.4)",
+            });
+          },
+        });
+      }
+    }, sectionRef);
+
+    return () => ctx.revert();
+  }, []);
 
   return (
     <section
+      ref={sectionRef}
       id="skills"
       style={{
         background: "var(--cream-dark)",
         borderTop: "3px solid var(--black)",
-        padding: "100px 48px",
+        padding: "100px 24px",
+        position: "relative",
+        overflow: "hidden",
       }}
     >
-      <div style={{ maxWidth: "1400px", margin: "0 auto" }}>
+      {/* Decorative grid */}
+      <div
+        style={{
+          position: "absolute",
+          bottom: "30px",
+          right: "30px",
+          width: "180px",
+          height: "180px",
+          backgroundImage: "radial-gradient(var(--black) 1.5px, transparent 1.5px)",
+          backgroundSize: "14px 14px",
+          opacity: 0.05,
+          zIndex: 0,
+        }}
+      />
+
+      <div style={{ maxWidth: "1400px", margin: "0 auto", position: "relative", zIndex: 1 }}>
         {/* Header */}
-        <div ref={headerRef} style={{ marginBottom: "64px" }}>
-          <div
-            className="section-label"
-            style={{
-              marginBottom: "24px",
-              opacity: headerVisible ? 1 : 0,
-              transition: "all 0.6s cubic-bezier(0.16, 1, 0.3, 1)",
-            }}
-          >
+        <div ref={headerRef} style={{ marginBottom: "72px" }}>
+          <div className="section-label" style={{ marginBottom: "24px" }}>
             <span>05</span>
             <span>Skills</span>
           </div>
+
           <div
             style={{
               display: "flex",
@@ -142,29 +136,30 @@ export default function SkillsSection() {
               gap: "24px",
             }}
           >
-            <h2
-              className="display-name"
-              style={{
-                fontSize: "clamp(40px, 6vw, 80px)",
-                opacity: headerVisible ? 1 : 0,
-                transform: headerVisible ? "translateY(0)" : "translateY(30px)",
-                transition: "all 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.1s",
-              }}
-            >
+            <h2 className="display-name" style={{ fontSize: "clamp(44px, 7vw, 90px)" }}>
               Expertise
             </h2>
             <p
               style={{
-                maxWidth: "280px",
+                maxWidth: "300px",
                 fontSize: "13px",
-                lineHeight: 1.65,
-                opacity: headerVisible ? 0.55 : 0,
-                transition: "all 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.2s",
+                lineHeight: 1.7,
+                opacity: 0.55,
               }}
             >
-              A decade of sharpened tools. Each bar is calibrated against real production work.
+              A decade of sharpened tools. Each bar is calibrated against real
+              production work.
             </p>
           </div>
+
+          <div
+            style={{
+              width: "100%",
+              height: "4px",
+              background: "var(--black)",
+              marginTop: "32px",
+            }}
+          />
         </div>
 
         {/* Skills grid */}
@@ -177,83 +172,20 @@ export default function SkillsSection() {
           }}
         >
           {skillCategories.map((cat, ci) => (
-            <div
-              key={cat.category}
-              style={{
-                border: "3px solid var(--black)",
-                padding: "36px",
-                background: ci % 2 === 1 ? "var(--cream)" : "var(--cream-dark)",
-                opacity: gridVisible ? 1 : 0,
-                transform: gridVisible ? "translateY(0)" : "translateY(30px)",
-                transition: `all 0.7s cubic-bezier(0.16,1,0.3,1) ${ci * 0.1}s`,
-              }}
-            >
-              {/* Category header */}
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "12px",
-                  marginBottom: "32px",
-                  paddingBottom: "16px",
-                  borderBottom: "2px solid var(--black)",
-                }}
-              >
-                <span
-                  style={{
-                    fontSize: "24px",
-                    color: "var(--mustard)",
-                    background: "var(--black)",
-                    width: "44px",
-                    height: "44px",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    border: "2px solid var(--black)",
-                    flexShrink: 0,
-                  }}
-                >
-                  {cat.icon}
-                </span>
-                <span
-                  style={{
-                    fontSize: "14px",
-                    fontWeight: 800,
-                    letterSpacing: "0.1em",
-                    textTransform: "uppercase",
-                  }}
-                >
-                  {cat.category}
-                </span>
-              </div>
-
-              {/* Skill bars */}
-              <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-                {cat.skills.map((skill, si) => (
-                  <SkillBar
-                    key={skill.name}
-                    name={skill.name}
-                    level={skill.level}
-                    visible={gridVisible}
-                    delay={ci * 0.1 + si * 0.08}
-                  />
-                ))}
-              </div>
-            </div>
+            <SkillCategory key={cat.category} cat={cat} index={ci} visible={visible} />
           ))}
         </div>
 
-        {/* Bottom tech stack icons row */}
+        {/* Bottom "Also fluent in" strip */}
         <div
           style={{
-            marginTop: "0px",
             border: "3px solid var(--black)",
             borderTop: "none",
             background: "var(--black)",
-            padding: "24px 36px",
+            padding: "20px 32px",
             display: "flex",
             flexWrap: "wrap",
-            gap: "12px",
+            gap: "10px",
             alignItems: "center",
           }}
         >
@@ -272,18 +204,19 @@ export default function SkillsSection() {
           </span>
           {[
             "Docker", "Vercel", "AWS", "Prisma", "Redis",
-            "Webpack", "Vite", "Testing Library", "Playwright", "Blender"
+            "Webpack", "Vite", "Testing Library", "Playwright", "Blender",
           ].map((tech) => (
             <span
               key={tech}
               style={{
-                border: "1px solid rgba(255,255,255,0.15)",
+                border: "2px solid rgba(245,240,232,0.15)",
                 padding: "4px 12px",
                 fontSize: "10px",
-                fontWeight: 600,
+                fontWeight: 700,
                 letterSpacing: "0.06em",
                 color: "rgba(245,240,232,0.7)",
-                background: "rgba(255,255,255,0.03)",
+                background: "rgba(255,255,255,0.04)",
+                boxShadow: "2px 2px 0 rgba(245,240,232,0.06)",
               }}
             >
               {tech}
@@ -292,5 +225,157 @@ export default function SkillsSection() {
         </div>
       </div>
     </section>
+  );
+}
+
+/* ─── Skill Category Card ─── */
+function SkillCategory({
+  cat,
+  index,
+  visible,
+}: {
+  cat: (typeof skillCategories)[0];
+  index: number;
+  visible: boolean;
+}) {
+  const [hovered, setHovered] = useState(false);
+  const isAlt = index % 2 === 1;
+
+  return (
+    <div
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        border: "3px solid var(--black)",
+        padding: "40px",
+        background: isAlt ? "var(--cream)" : "var(--cream-dark)",
+        position: "relative",
+        overflow: "hidden",
+        cursor: "none",
+        transform: hovered ? "translate(-3px, -3px)" : "translate(0, 0)",
+        boxShadow: hovered ? "9px 9px 0px var(--black)" : "none",
+        transition: "transform 0.25s ease, box-shadow 0.25s ease",
+      }}
+    >
+      {/* Category header */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "14px",
+          marginBottom: "32px",
+          paddingBottom: "18px",
+          borderBottom: "3px solid var(--black)",
+        }}
+      >
+        <div
+          style={{
+            width: "48px",
+            height: "48px",
+            background: "var(--black)",
+            color: "var(--mustard)",
+            border: "3px solid var(--black)",
+            boxShadow: "3px 3px 0 var(--mustard)",
+            display: "grid",
+            placeItems: "center",
+            fontSize: "22px",
+            flexShrink: 0,
+            transform: hovered ? "rotate(-8deg)" : "rotate(0deg)",
+            transition: "transform 0.3s ease",
+          }}
+        >
+          {cat.icon}
+        </div>
+        <span
+          style={{
+            fontSize: "15px",
+            fontWeight: 800,
+            letterSpacing: "0.1em",
+            textTransform: "uppercase",
+          }}
+        >
+          {cat.category}
+        </span>
+      </div>
+
+      {/* Skill bars */}
+      <div style={{ display: "flex", flexDirection: "column", gap: "22px" }}>
+        {cat.skills.map((skill, si) => (
+          <div
+            key={skill.name}
+            style={{
+              opacity: visible ? 1 : 0,
+              transform: visible ? "translateX(0)" : "translateX(-20px)",
+              transition: `all 0.6s cubic-bezier(0.16,1,0.3,1) ${index * 0.1 + si * 0.08}s`,
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: "8px",
+              }}
+            >
+              <span
+                style={{
+                  fontWeight: 700,
+                  fontSize: "13px",
+                  letterSpacing: "0.02em",
+                }}
+              >
+                {skill.name}
+              </span>
+              <span
+                style={{
+                  fontFamily: "Courier New, monospace",
+                  fontSize: "11px",
+                  fontWeight: 800,
+                  color: "var(--mustard)",
+                  background: "var(--black)",
+                  padding: "2px 8px",
+                  border: "2px solid var(--black)",
+                  letterSpacing: "0.05em",
+                }}
+              >
+                {skill.level}%
+              </span>
+            </div>
+            <div
+              style={{
+                width: "100%",
+                height: "10px",
+                background: "var(--cream-dark)",
+                border: "2px solid var(--black)",
+                overflow: "hidden",
+              }}
+            >
+              <div
+                style={{
+                  height: "100%",
+                  background: "var(--mustard)",
+                  borderRight: "2px solid var(--black)",
+                  width: visible ? `${skill.level}%` : "0%",
+                  transition: `width 1.2s cubic-bezier(0.16, 1, 0.3, 1) ${index * 0.1 + si * 0.12}s`,
+                }}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Bottom accent */}
+      <div
+        style={{
+          position: "absolute",
+          bottom: 0,
+          left: 0,
+          height: "5px",
+          background: "var(--mustard)",
+          width: hovered ? "100%" : "0%",
+          transition: "width 0.5s cubic-bezier(0.16, 1, 0.3, 1)",
+        }}
+      />
+    </div>
   );
 }

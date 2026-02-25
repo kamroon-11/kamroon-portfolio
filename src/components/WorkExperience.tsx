@@ -1,5 +1,9 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+gsap.registerPlugin(ScrollTrigger);
 
 const experiences = [
   {
@@ -40,161 +44,196 @@ const experiences = [
   },
 ];
 
-function useInView(threshold = 0.2) {
-  const ref = useRef<HTMLDivElement>(null);
-  const [visible, setVisible] = useState(false);
-  useEffect(() => {
-    const obs = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) setVisible(true); },
-      { threshold }
-    );
-    if (ref.current) obs.observe(ref.current);
-    return () => obs.disconnect();
-  }, [threshold]);
-  return { ref, visible };
-}
-
 export default function WorkExperience() {
-  const { ref: headerRef, visible: headerVisible } = useInView(0.1);
+  const sectionRef = useRef<HTMLElement>(null);
+  const headerRef = useRef<HTMLDivElement>(null);
+  const cardsRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
+
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      if (headerRef.current) {
+        const els = headerRef.current.children;
+        gsap.set(els, { y: 50, opacity: 0 });
+        ScrollTrigger.create({
+          trigger: headerRef.current,
+          start: "top 80%",
+          onEnter: () => {
+            gsap.to(els, { y: 0, opacity: 1, duration: 0.8, stagger: 0.12, ease: "power4.out" });
+          },
+        });
+      }
+
+      if (cardsRef.current) {
+        const cards = cardsRef.current.children;
+        gsap.set(cards, { x: -60, opacity: 0 });
+        ScrollTrigger.create({
+          trigger: cardsRef.current,
+          start: "top 75%",
+          onEnter: () => {
+            gsap.to(cards, { x: 0, opacity: 1, duration: 0.8, stagger: 0.12, ease: "back.out(1.2)" });
+          },
+        });
+      }
+    }, sectionRef);
+
+    return () => ctx.revert();
+  }, []);
+
+  const active = experiences[activeIndex];
 
   return (
     <section
+      ref={sectionRef}
       id="work"
       style={{
         background: "var(--black)",
         borderTop: "3px solid var(--black)",
-        padding: "100px 48px",
+        padding: "100px 24px",
+        position: "relative",
+        overflow: "hidden",
       }}
     >
-      <div style={{ maxWidth: "1400px", margin: "0 auto" }}>
+      {/* Decorative cross-hatch */}
+      <div
+        style={{
+          position: "absolute",
+          top: 0,
+          right: 0,
+          width: "300px",
+          height: "300px",
+          backgroundImage:
+            "repeating-linear-gradient(45deg, rgba(232,184,75,0.03) 0px, rgba(232,184,75,0.03) 1px, transparent 1px, transparent 14px)",
+          zIndex: 0,
+        }}
+      />
+
+      <div style={{ maxWidth: "1400px", margin: "0 auto", position: "relative", zIndex: 1 }}>
         {/* Header */}
-        <div ref={headerRef} style={{ marginBottom: "64px" }}>
-          <div
-            className="section-label"
-            style={{
-              marginBottom: "24px",
-              opacity: headerVisible ? 1 : 0,
-              transition: "all 0.6s cubic-bezier(0.16, 1, 0.3, 1)",
-              background: "var(--mustard)",
-            }}
-          >
+        <div ref={headerRef} style={{ marginBottom: "72px" }}>
+          <div className="section-label" style={{ marginBottom: "24px", background: "var(--mustard)" }}>
             <span>03</span>
             <span>Experience</span>
           </div>
+
           <h2
             className="display-name"
             style={{
-              fontSize: "clamp(40px, 6vw, 80px)",
+              fontSize: "clamp(44px, 7vw, 90px)",
               color: "var(--cream)",
-              opacity: headerVisible ? 1 : 0,
-              transform: headerVisible ? "translateY(0)" : "translateY(30px)",
-              transition: "all 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.1s",
             }}
           >
             Work Timeline
           </h2>
+
+          <div
+            style={{
+              width: "100%",
+              height: "3px",
+              background: "rgba(245,240,232,0.1)",
+              marginTop: "32px",
+            }}
+          />
         </div>
 
-        {/* Timeline layout */}
+        {/* Timeline Grid */}
         <div
+          ref={cardsRef}
           style={{
             display: "grid",
-            gridTemplateColumns: "280px 1fr",
+            gridTemplateColumns: "1fr",
             gap: "0px",
-            borderLeft: "3px solid rgba(255,255,255,0.12)",
           }}
         >
-          {/* Left: Year nodes */}
-          <div style={{ display: "flex", flexDirection: "column" }}>
-            {experiences.map((exp, i) => (
-              <button
-                key={exp.year}
-                onClick={() => setActiveIndex(i)}
+          {experiences.map((exp, i) => (
+            <div
+              key={exp.year}
+              onClick={() => setActiveIndex(i)}
+              style={{
+                display: "grid",
+                gridTemplateColumns: "120px 1fr",
+                border: "3px solid rgba(245,240,232,0.12)",
+                borderBottom: i < experiences.length - 1 ? "none" : "3px solid rgba(245,240,232,0.12)",
+                background: i === activeIndex ? "rgba(232,184,75,0.06)" : "transparent",
+                cursor: "none",
+                transition: "background 0.3s ease",
+                position: "relative",
+                overflow: "hidden",
+              }}
+            >
+              {/* Active indicator */}
+              <div
                 style={{
-                  all: "unset",
-                  cursor: "none",
-                  padding: "28px 32px",
-                  borderBottom: "1px solid rgba(255,255,255,0.08)",
-                  borderLeft: i === activeIndex ? "4px solid var(--mustard)" : "4px solid transparent",
-                  background: i === activeIndex ? "rgba(232,184,75,0.06)" : "transparent",
-                  transition: "all 0.3s ease",
-                  position: "relative",
+                  position: "absolute",
+                  left: 0,
+                  top: 0,
+                  bottom: 0,
+                  width: "5px",
+                  background: i === activeIndex ? "var(--mustard)" : "transparent",
+                  transition: "background 0.3s ease",
+                }}
+              />
+
+              {/* Year column */}
+              <div
+                style={{
+                  padding: "32px 24px",
+                  borderRight: "3px solid rgba(245,240,232,0.12)",
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  gap: "8px",
                 }}
               >
-                {/* Node dot */}
-                <div
-                  style={{
-                    position: "absolute",
-                    left: "-2px",
-                    top: "50%",
-                    transform: "translate(-50%, -50%)",
-                    width: i === activeIndex ? "14px" : "10px",
-                    height: i === activeIndex ? "14px" : "10px",
-                    background: i === activeIndex ? "var(--mustard)" : "rgba(255,255,255,0.25)",
-                    border: `2px solid ${i === activeIndex ? "var(--mustard)" : "transparent"}`,
-                    borderRadius: i === activeIndex ? "0" : "50%",
-                    transition: "all 0.3s ease",
-                    zIndex: 1,
-                  }}
-                />
-
                 <div
                   style={{
                     fontFamily: "Courier New, monospace",
                     fontSize: "28px",
-                    fontWeight: 700,
-                    color: i === activeIndex ? "var(--mustard)" : "rgba(255,255,255,0.2)",
-                    letterSpacing: "-0.02em",
-                    lineHeight: 1,
-                    marginBottom: "6px",
+                    fontWeight: 800,
+                    color: i === activeIndex ? "var(--mustard)" : "rgba(245,240,232,0.2)",
                     transition: "color 0.3s ease",
+                    lineHeight: 1,
                   }}
                 >
                   {exp.year}
                 </div>
+                {/* Node dot */}
                 <div
                   style={{
-                    fontSize: "12px",
-                    fontWeight: 700,
-                    color: i === activeIndex ? "var(--cream)" : "rgba(255,255,255,0.35)",
-                    letterSpacing: "0.04em",
-                    transition: "color 0.3s ease",
+                    width: i === activeIndex ? "14px" : "8px",
+                    height: i === activeIndex ? "14px" : "8px",
+                    background: i === activeIndex ? "var(--mustard)" : "rgba(245,240,232,0.2)",
+                    border: i === activeIndex ? "3px solid var(--mustard)" : "none",
+                    transition: "all 0.3s ease",
+                  }}
+                />
+              </div>
+
+              {/* Detail column */}
+              <div style={{ padding: "32px 36px" }}>
+                {/* Top row */}
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "10px",
+                    marginBottom: "12px",
+                    flexWrap: "wrap",
                   }}
                 >
-                  {exp.company}
-                </div>
-              </button>
-            ))}
-          </div>
-
-          {/* Right: Detail panel */}
-          <div
-            style={{
-              borderLeft: "3px solid rgba(255,255,255,0.1)",
-              padding: "40px 48px",
-            }}
-          >
-            {experiences.map((exp, i) => (
-              <div
-                key={exp.year}
-                style={{
-                  display: i === activeIndex ? "block" : "none",
-                  animation: i === activeIndex ? "fadeSlideIn 0.4s cubic-bezier(0.16,1,0.3,1)" : "none",
-                }}
-              >
-                {/* Role badge */}
-                <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "20px" }}>
                   <span
                     style={{
-                      background: "var(--mustard)",
+                      background: i === activeIndex ? "var(--mustard)" : "rgba(245,240,232,0.1)",
                       border: "2px solid var(--mustard)",
-                      color: "var(--black)",
-                      padding: "4px 12px",
-                      fontSize: "10px",
-                      fontWeight: 700,
+                      color: i === activeIndex ? "var(--black)" : "var(--mustard)",
+                      padding: "3px 10px",
+                      fontSize: "9px",
+                      fontWeight: 800,
                       letterSpacing: "0.1em",
                       textTransform: "uppercase",
+                      boxShadow: i === activeIndex ? "2px 2px 0 var(--cream)" : "none",
+                      transition: "all 0.3s ease",
                     }}
                   >
                     {exp.type}
@@ -203,79 +242,65 @@ export default function WorkExperience() {
                     style={{
                       fontFamily: "Courier New, monospace",
                       fontSize: "10px",
-                      color: "rgba(255,255,255,0.4)",
-                      letterSpacing: "0.1em",
+                      color: "rgba(245,240,232,0.35)",
+                      letterSpacing: "0.08em",
                     }}
                   >
-                    {exp.year} — Present
+                    @ {exp.company}
                   </span>
                 </div>
 
-                {/* Role title */}
+                {/* Role */}
                 <h3
                   style={{
-                    fontSize: "clamp(24px, 3vw, 40px)",
+                    fontSize: "clamp(20px, 2.5vw, 32px)",
                     fontWeight: 800,
                     letterSpacing: "-0.02em",
-                    color: "var(--cream)",
-                    marginBottom: "8px",
+                    color: i === activeIndex ? "var(--cream)" : "rgba(245,240,232,0.4)",
+                    marginBottom: "12px",
                     lineHeight: 1.1,
+                    transition: "color 0.3s ease",
                   }}
                 >
                   {exp.role}
                 </h3>
+
+                {/* Description (only show for active) */}
                 <div
                   style={{
-                    fontSize: "16px",
-                    fontWeight: 600,
-                    color: "var(--mustard)",
-                    marginBottom: "24px",
+                    maxHeight: i === activeIndex ? "200px" : "0px",
+                    opacity: i === activeIndex ? 1 : 0,
+                    overflow: "hidden",
+                    transition: "max-height 0.5s cubic-bezier(0.16,1,0.3,1), opacity 0.4s ease",
                   }}
                 >
-                  @ {exp.company}
-                </div>
-
-                {/* Description */}
-                <p
-                  style={{
-                    fontSize: "15px",
-                    lineHeight: 1.75,
-                    color: "rgba(245,240,232,0.65)",
-                    marginBottom: "32px",
-                    maxWidth: "540px",
-                  }}
-                >
-                  {exp.desc}
-                </p>
-
-                {/* Skills used */}
-                <div>
-                  <div
+                  <p
                     style={{
-                      fontFamily: "Courier New, monospace",
-                      fontSize: "9px",
-                      fontWeight: 600,
-                      letterSpacing: "0.14em",
-                      textTransform: "uppercase",
-                      color: "rgba(255,255,255,0.3)",
-                      marginBottom: "12px",
+                      fontSize: "14px",
+                      lineHeight: 1.75,
+                      color: "rgba(245,240,232,0.6)",
+                      marginBottom: "20px",
+                      maxWidth: "560px",
                     }}
                   >
-                    Technologies Used
-                  </div>
+                    {exp.desc}
+                  </p>
+
+                  {/* Skills */}
                   <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
                     {exp.skills.map((skill) => (
                       <span
                         key={skill}
                         style={{
-                          border: "2px solid rgba(255,255,255,0.2)",
+                          border: "2px solid rgba(245,240,232,0.2)",
                           padding: "4px 12px",
-                          fontSize: "11px",
-                          fontWeight: 700,
-                          letterSpacing: "0.06em",
+                          fontSize: "10px",
+                          fontWeight: 800,
+                          letterSpacing: "0.08em",
                           textTransform: "uppercase",
                           color: "var(--cream)",
                           background: "rgba(255,255,255,0.04)",
+                          boxShadow: "2px 2px 0 rgba(245,240,232,0.08)",
                         }}
                       >
                         {skill}
@@ -284,17 +309,20 @@ export default function WorkExperience() {
                   </div>
                 </div>
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
-      </div>
 
-      <style>{`
-        @keyframes fadeSlideIn {
-          from { opacity: 0; transform: translateX(20px); }
-          to { opacity: 1; transform: translateX(0); }
-        }
-      `}</style>
+        {/* Bottom accent */}
+        <div
+          style={{
+            border: "3px solid rgba(245,240,232,0.12)",
+            borderTop: "none",
+            background: "var(--mustard)",
+            height: "6px",
+          }}
+        />
+      </div>
     </section>
   );
 }

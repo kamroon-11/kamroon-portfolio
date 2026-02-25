@@ -162,8 +162,8 @@ function SponsoredAdCarousel({ isMobile }: { isMobile: boolean }) {
         background: "var(--cream)",
         boxShadow: "6px 6px 0 var(--black)",
         overflow: "hidden",
-        width: isMobile ? "100%" : "320px",
-        maxWidth: "360px",
+        width: isMobile ? "260px" : "220px",
+        maxWidth: "260px",
         flexShrink: 0,
         margin: isMobile ? "0 auto" : "0",
       }}
@@ -246,7 +246,7 @@ function SponsoredAdCarousel({ isMobile }: { isMobile: boolean }) {
                     height: "100%",
                     objectFit: "cover",
                     display: "block",
-                    filter: "contrast(105%) saturate(105%)",
+                    filter: "contrast(104%) saturate(104%)",
                     transform: "translateZ(0)",
                     backfaceVisibility: "hidden",
                   }}
@@ -293,8 +293,8 @@ function SponsoredAdCarousel({ isMobile }: { isMobile: boolean }) {
               key={i}
               onClick={() => setCurrent(i)}
               style={{
-                width: i === current ? "20px" : "8px",
-                height: "8px",
+                width: i === current ? "16px" : "6px",
+                height: "6px",
                 background: i === current ? "var(--mustard)" : "var(--cream-dark)",
                 border: "2px solid var(--black)",
                 cursor: "pointer",
@@ -306,7 +306,7 @@ function SponsoredAdCarousel({ isMobile }: { isMobile: boolean }) {
 
         <button
           className="nb-btn"
-          style={{ padding: "5px 10px", fontSize: "9px" }}
+          style={{ padding: "4px 8px", fontSize: "9px" }}
           onClick={() =>
             document.getElementById("projects")?.scrollIntoView({ behavior: "smooth" })
           }

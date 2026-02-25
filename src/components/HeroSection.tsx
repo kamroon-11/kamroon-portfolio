@@ -501,7 +501,7 @@ export default function HeroSection() {
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: isMobile ? "1fr" : "1fr 420px",
+            gridTemplateColumns: isMobile ? "1fr" : "1fr 480px",
             gap: isMobile ? "48px" : "32px",
             alignItems: "center",
           }}
@@ -745,7 +745,7 @@ export default function HeroSection() {
                 background: "var(--cream)",
                 boxShadow: "8px 8px 0 var(--black)",
                 padding: "16px",
-                width: isMobile ? "min(92vw, 320px)" : "280px",
+                width: isMobile ? "min(96vw, 360px)" : "360px",
                 flexShrink: 0,
                 margin: isMobile ? "0 auto" : "0",
                 transformStyle: "preserve-3d",
@@ -759,11 +759,41 @@ export default function HeroSection() {
                   border: "3px solid var(--black)",
                   borderRadius: "10px",
                   overflow: "hidden",
-                  height: isMobile ? "280px" : "300px",
+                  height: isMobile ? "360px" : "420px",
                   position: "relative",
                   background: "linear-gradient(135deg, #f1e9ff 0%, #fff8e7 100%)",
                 }}
               >
+                {/* Overlay tech badges */}
+                <div
+                  style={{
+                    position: "absolute",
+                    top: "10px",
+                    left: "10px",
+                    display: "flex",
+                    gap: "6px",
+                    zIndex: 2,
+                  }}
+                >
+                  {["GSAP", "Framer"].map((t) => (
+                    <span
+                      key={t}
+                      style={{
+                        fontSize: isMobile ? "9px" : "10px",
+                        fontWeight: 800,
+                        letterSpacing: "0.08em",
+                        textTransform: "uppercase",
+                        background: "var(--black)",
+                        color: "var(--mustard)",
+                        border: "2px solid var(--black)",
+                        padding: "4px 8px",
+                        boxShadow: "2px 2px 0 var(--mustard)",
+                      }}
+                    >
+                      {t}
+                    </span>
+                  ))}
+                </div>
                 {/* Fallback avatar */}
                 <div
                   style={{

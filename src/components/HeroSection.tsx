@@ -157,13 +157,13 @@ function SponsoredAdCarousel({ isMobile }: { isMobile: boolean }) {
   return (
     <div
       style={{
-        border: "4px solid var(--black)",
+        border: "3px solid var(--black)",
         borderRadius: "14px",
         background: "var(--cream)",
-        boxShadow: "6px 6px 0 var(--black)",
+        boxShadow: "4px 4px 0 var(--black)",
         overflow: "hidden",
-        width: isMobile ? "260px" : "220px",
-        maxWidth: "260px",
+        width: isMobile ? "200px" : "160px",
+        maxWidth: "200px",
         flexShrink: 0,
         margin: isMobile ? "0 auto" : "0",
       }}
@@ -280,21 +280,21 @@ function SponsoredAdCarousel({ isMobile }: { isMobile: boolean }) {
       <div
         style={{
           borderTop: "3px solid var(--black)",
-          padding: "10px 12px",
+          padding: "8px 10px",
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
         }}
       >
         {/* Slide dots */}
-        <div style={{ display: "flex", gap: "6px" }}>
+        <div style={{ display: "flex", gap: "4px" }}>
           {adVideos.map((_, i) => (
             <div
               key={i}
               onClick={() => setCurrent(i)}
               style={{
-                width: i === current ? "16px" : "6px",
-                height: "6px",
+                width: i === current ? "12px" : "5px",
+                height: "5px",
                 background: i === current ? "var(--mustard)" : "var(--cream-dark)",
                 border: "2px solid var(--black)",
                 cursor: "pointer",
@@ -306,7 +306,7 @@ function SponsoredAdCarousel({ isMobile }: { isMobile: boolean }) {
 
         <button
           className="nb-btn"
-          style={{ padding: "4px 8px", fontSize: "9px" }}
+          style={{ padding: "3px 6px", fontSize: "8px" }}
           onClick={() =>
             document.getElementById("projects")?.scrollIntoView({ behavior: "smooth" })
           }

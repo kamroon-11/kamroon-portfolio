@@ -123,7 +123,7 @@ export default function TestimonialsSection() {
       style={{
         background: "var(--cream)",
         borderTop: "3px solid var(--black)",
-        padding: "100px 24px",
+        padding: "var(--reviews-section-padding, 100px 24px)",
         position: "relative",
         overflow: "hidden",
       }}
@@ -196,7 +196,7 @@ export default function TestimonialsSection() {
           style={{
             display: "grid",
             gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-            gap: "0px",
+            gap: "var(--reviews-grid-gap, 0px)",
           }}
         >
           {testimonials.map((t, i) => (
@@ -204,6 +204,33 @@ export default function TestimonialsSection() {
           ))}
         </div>
       </div>
+      <style>{`
+        #reviews {
+          --reviews-section-padding: 100px 24px;
+          --reviews-grid-gap: 0px;
+          --review-card-padding: 44px;
+        }
+        @media (max-width: 1024px) {
+          #reviews {
+            --reviews-section-padding: 72px 20px;
+            --reviews-grid-gap: 12px;
+            --review-card-padding: 32px;
+          }
+        }
+        @media (max-width: 640px) {
+          #reviews {
+            --reviews-section-padding: 56px 16px;
+            --reviews-grid-gap: 12px;
+            --review-card-padding: 24px;
+          }
+          #reviews .display-name {
+            font-size: clamp(32px, 8vw, 56px) !important;
+          }
+        }
+        @media (pointer: coarse) {
+          #reviews * { cursor: auto !important; }
+        }
+      `}</style>
     </section>
   );
 }
@@ -226,7 +253,7 @@ function TestimonialCard({
       style={{
         border: "3px solid var(--black)",
         background: s.bg,
-        padding: "44px",
+        padding: "var(--review-card-padding, 44px)",
         position: "relative",
         cursor: "none",
         overflow: "hidden",

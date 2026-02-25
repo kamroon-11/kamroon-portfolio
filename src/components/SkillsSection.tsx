@@ -99,7 +99,7 @@ export default function SkillsSection() {
       style={{
         background: "var(--cream-dark)",
         borderTop: "3px solid var(--black)",
-        padding: "100px 24px",
+        padding: "var(--skills-section-padding, 100px 24px)",
         position: "relative",
         overflow: "hidden",
       }}
@@ -168,7 +168,7 @@ export default function SkillsSection() {
           style={{
             display: "grid",
             gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-            gap: "0px",
+            gap: "var(--skills-grid-gap, 0px)",
           }}
         >
           {skillCategories.map((cat, ci) => (
@@ -224,6 +224,33 @@ export default function SkillsSection() {
           ))}
         </div>
       </div>
+      <style>{`
+        #skills {
+          --skills-section-padding: 100px 24px;
+          --skills-grid-gap: 0px;
+          --skills-card-padding: 40px;
+        }
+        @media (max-width: 1024px) {
+          #skills {
+            --skills-section-padding: 72px 20px;
+            --skills-grid-gap: 12px;
+            --skills-card-padding: 32px;
+          }
+        }
+        @media (max-width: 640px) {
+          #skills {
+            --skills-section-padding: 56px 16px;
+            --skills-grid-gap: 12px;
+            --skills-card-padding: 24px;
+          }
+          #skills .display-name {
+            font-size: clamp(32px, 8vw, 56px) !important;
+          }
+        }
+        @media (pointer: coarse) {
+          #skills * { cursor: auto !important; }
+        }
+      `}</style>
     </section>
   );
 }
@@ -247,7 +274,7 @@ function SkillCategory({
       onMouseLeave={() => setHovered(false)}
       style={{
         border: "3px solid var(--black)",
-        padding: "40px",
+        padding: "var(--skills-card-padding, 40px)",
         background: isAlt ? "var(--cream)" : "var(--cream-dark)",
         position: "relative",
         overflow: "hidden",

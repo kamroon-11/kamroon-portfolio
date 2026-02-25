@@ -100,7 +100,7 @@ export default function ServicesSection() {
       style={{
         background: "var(--cream)",
         borderTop: "3px solid var(--black)",
-        padding: "100px 24px",
+        padding: "var(--services-section-padding, 100px 24px)",
         position: "relative",
         overflow: "hidden",
       }}
@@ -173,7 +173,7 @@ export default function ServicesSection() {
           style={{
             display: "grid",
             gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-            gap: "0px",
+            gap: "var(--services-grid-gap, 0px)",
           }}
         >
           {services.map((service, i) => {
@@ -228,6 +228,33 @@ export default function ServicesSection() {
           </button>
         </div>
       </div>
+      <style>{`
+        #services {
+          --services-section-padding: 100px 24px;
+          --services-grid-gap: 0px;
+          --service-card-padding: 40px;
+        }
+        @media (max-width: 1024px) {
+          #services {
+            --services-section-padding: 72px 20px;
+            --services-grid-gap: 12px;
+            --service-card-padding: 32px;
+          }
+        }
+        @media (max-width: 640px) {
+          #services {
+            --services-section-padding: 56px 16px;
+            --services-grid-gap: 12px;
+            --service-card-padding: 24px;
+          }
+          #services .display-name {
+            font-size: clamp(32px, 8vw, 56px) !important;
+          }
+        }
+        @media (pointer: coarse) {
+          #services * { cursor: auto !important; }
+        }
+      `}</style>
     </section>
   );
 }
@@ -258,7 +285,7 @@ function ServiceCard({
       style={{
         border: "3px solid var(--black)",
         background: bg,
-        padding: "40px",
+        padding: "var(--service-card-padding, 40px)",
         position: "relative",
         cursor: "none",
         overflow: "hidden",

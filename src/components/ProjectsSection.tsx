@@ -104,7 +104,7 @@ export default function ProjectsSection() {
       style={{
         background: "var(--cream)",
         borderTop: "3px solid var(--black)",
-        padding: "100px 24px",
+        padding: "var(--projects-section-padding, 100px 24px)",
         position: "relative",
         overflow: "hidden",
       }}
@@ -163,12 +163,46 @@ export default function ProjectsSection() {
         </div>
 
         {/* Projects — Alternating bento layout */}
-        <div ref={cardsRef} style={{ display: "flex", flexDirection: "column", gap: "0px" }}>
+        <div ref={cardsRef} style={{ display: "flex", flexDirection: "column", gap: "var(--projects-list-gap, 0px)" }}>
           {projects.map((project, i) => (
             <ProjectCard key={project.id} project={project} index={i} />
           ))}
         </div>
       </div>
+      <style>{`
+        #projects {
+          --projects-section-padding: 100px 24px;
+          --projects-list-gap: 0px;
+          --project-card-grid: initial;
+          --project-content-pad: 48px 44px;
+          --project-visual-pad: 48px;
+          --project-watermark-size: 220px;
+        }
+        @media (max-width: 1024px) {
+          #projects {
+            --projects-section-padding: 72px 20px;
+            --projects-list-gap: 12px;
+            --project-card-grid: 1fr;
+            --project-content-pad: 36px 28px;
+            --project-visual-pad: 36px;
+            --project-watermark-size: 160px;
+          }
+        }
+        @media (max-width: 640px) {
+          #projects {
+            --projects-section-padding: 56px 16px;
+            --project-content-pad: 28px 20px;
+            --project-visual-pad: 24px;
+            --project-watermark-size: 120px;
+          }
+          #projects .display-name {
+            font-size: clamp(32px, 8vw, 56px) !important;
+          }
+        }
+        @media (pointer: coarse) {
+          #projects * { cursor: auto !important; }
+        }
+      `}</style>
     </section>
   );
 }
@@ -192,7 +226,7 @@ function ProjectCard({
       onMouseLeave={() => setHovered(false)}
       style={{
         display: "grid",
-        gridTemplateColumns: index % 2 === 0 ? "1fr 1.2fr" : "1.2fr 1fr",
+        gridTemplateColumns: `var(--project-card-grid, ${index % 2 === 0 ? "1fr 1.2fr" : "1.2fr 1fr"})`,
         border: "3px solid var(--black)",
         borderBottom: index < projects.length - 1 ? "none" : "3px solid var(--black)",
         background: project.bg,
@@ -226,7 +260,7 @@ function ProjectCard({
       {/* Content side */}
       <div
         style={{
-          padding: "48px 44px",
+          padding: "var(--project-content-pad, 48px 44px)",
           display: "flex",
           flexDirection: "column",
           justifyContent: "center",
@@ -374,7 +408,7 @@ function ProjectCard({
       {/* Visual side — decorative composition */}
       <div
         style={{
-          padding: "48px",
+          padding: "var(--project-visual-pad, 48px)",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -401,7 +435,7 @@ function ProjectCard({
           {/* Big number */}
           <span
             style={{
-              fontSize: "80px",
+              fontSize: "var(--project-watermark-size, 80px)",
               fontWeight: 900,
               color: project.accent,
               opacity: 0.25,

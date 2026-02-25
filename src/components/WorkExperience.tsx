@@ -89,7 +89,7 @@ export default function WorkExperience() {
       style={{
         background: "var(--black)",
         borderTop: "3px solid var(--black)",
-        padding: "100px 24px",
+        padding: "var(--work-section-padding, 100px 24px)",
         position: "relative",
         overflow: "hidden",
       }}
@@ -142,7 +142,7 @@ export default function WorkExperience() {
           style={{
             display: "grid",
             gridTemplateColumns: "1fr",
-            gap: "0px",
+            gap: "var(--work-grid-gap, 0px)",
           }}
         >
           {experiences.map((exp, i) => (
@@ -151,7 +151,7 @@ export default function WorkExperience() {
               onClick={() => setActiveIndex(i)}
               style={{
                 display: "grid",
-                gridTemplateColumns: "120px 1fr",
+                gridTemplateColumns: "var(--work-item-grid, 120px 1fr)",
                 border: "3px solid rgba(245,240,232,0.12)",
                 borderBottom: i < experiences.length - 1 ? "none" : "3px solid rgba(245,240,232,0.12)",
                 background: i === activeIndex ? "rgba(232,184,75,0.06)" : "transparent",
@@ -177,7 +177,7 @@ export default function WorkExperience() {
               {/* Year column */}
               <div
                 style={{
-                  padding: "32px 24px",
+                  padding: "var(--work-year-pad, 32px 24px)",
                   borderRight: "3px solid rgba(245,240,232,0.12)",
                   display: "flex",
                   flexDirection: "column",
@@ -323,6 +323,36 @@ export default function WorkExperience() {
           }}
         />
       </div>
+      <style>{`
+        #work {
+          --work-section-padding: 100px 24px;
+          --work-grid-gap: 0px;
+          --work-item-grid: 120px 1fr;
+          --work-year-pad: 32px 24px;
+        }
+        @media (max-width: 1024px) {
+          #work {
+            --work-section-padding: 72px 20px;
+            --work-grid-gap: 12px;
+            --work-item-grid: 100px 1fr;
+            --work-year-pad: 24px 20px;
+          }
+        }
+        @media (max-width: 640px) {
+          #work {
+            --work-section-padding: 56px 16px;
+            --work-grid-gap: 12px;
+            --work-item-grid: 1fr;
+            --work-year-pad: 16px 16px;
+          }
+          #work .display-name {
+            font-size: clamp(32px, 8vw, 56px) !important;
+          }
+        }
+        @media (pointer: coarse) {
+          #work * { cursor: auto !important; }
+        }
+      `}</style>
     </section>
   );
 }

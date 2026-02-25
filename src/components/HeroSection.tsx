@@ -733,71 +733,7 @@ export default function HeroSection() {
               marginLeft: isMobile ? "0" : "-120px",
             }}
           >
-            {/* ── Sponsored Ad — Video Carousel (left side) ── */}
-            <div ref={sponsoredRef}>
-              {isMobile ? (
-                <div style={{ display: "flex", alignItems: "stretch", gap: "12px" }}>
-                  <SponsoredAdCarousel isMobile={isMobile} />
-                  <div
-                    style={{
-                      border: "3px solid var(--black)",
-                      background: "var(--cream)",
-                      boxShadow: "4px 4px 0 var(--black)",
-                      padding: "10px 12px",
-                      width: "120px",
-                      alignSelf: "flex-start",
-                      transform: "rotate(-3deg)",
-                    }}
-                  >
-                    <div
-                      style={{
-                        fontFamily: "Courier New, monospace",
-                        fontSize: "9px",
-                        fontWeight: 800,
-                        letterSpacing: "0.12em",
-                        textTransform: "uppercase",
-                        color: "var(--black)",
-                        opacity: 0.7,
-                        marginBottom: "6px",
-                      }}
-                    >
-                      Note
-                    </div>
-                    <div
-                      style={{
-                        fontWeight: 900,
-                        fontSize: "13px",
-                        letterSpacing: "-0.02em",
-                        lineHeight: 1.1,
-                      }}
-                    >
-                      New Reel
-                    </div>
-                    <div
-                      style={{
-                        width: "100%",
-                        height: "4px",
-                        background: "var(--black)",
-                        margin: "8px 0",
-                      }}
-                    />
-                    <div
-                      style={{
-                        fontSize: "10px",
-                        fontWeight: 700,
-                        letterSpacing: "0.08em",
-                        textTransform: "uppercase",
-                        color: "rgba(10,10,10,0.55)",
-                      }}
-                    >
-                      GSAP • Three.js
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <SponsoredAdCarousel isMobile={isMobile} />
-              )}
-            </div>
+            {/* (Removed Sponsored Ad) */}
 
             {/* Portrait Card */}
             <div
@@ -809,7 +745,7 @@ export default function HeroSection() {
                 background: "var(--cream)",
                 boxShadow: "8px 8px 0 var(--black)",
                 padding: "16px",
-                width: isMobile ? "280px" : "280px",
+                width: isMobile ? "min(92vw, 320px)" : "280px",
                 flexShrink: 0,
                 margin: isMobile ? "0 auto" : "0",
                 transformStyle: "preserve-3d",

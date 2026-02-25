@@ -56,22 +56,22 @@ export default function ContactSection() {
       style={{
         background: "var(--black)",
         borderTop: "3px solid var(--black)",
-        padding: "100px 48px",
+        padding: "var(--contact-section-padding, 100px 48px)",
       }}
     >
       <div style={{ maxWidth: "1400px", margin: "0 auto" }}>
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: "0px",
+            gridTemplateColumns: "var(--contact-grid, 1fr 1fr)",
+            gap: "var(--contact-grid-gap, 0px)",
             border: "3px solid rgba(255,255,255,0.1)",
           }}
         >
           {/* Left: Info */}
           <div
             style={{
-              padding: "64px 56px",
+              padding: "var(--contact-pane-padding, 64px 56px)",
               background: "var(--mustard)",
               border: "3px solid var(--black)",
               display: "flex",
@@ -172,7 +172,7 @@ export default function ContactSection() {
           {/* Right: Form */}
           <div
             style={{
-              padding: "64px 56px",
+              padding: "var(--contact-pane-padding, 64px 56px)",
               background: "var(--black)",
               border: "3px solid rgba(255,255,255,0.1)",
             }}
@@ -391,6 +391,36 @@ export default function ContactSection() {
       </div>
 
       <style>{`
+        #contact {
+          --contact-grid: 1fr 1fr;
+          --contact-grid-gap: 0px;
+          --contact-section-padding: 100px 48px;
+          --contact-pane-padding: 64px 56px;
+        }
+        @media (max-width: 1024px) {
+          #contact {
+            --contact-grid: 1fr;
+            --contact-grid-gap: 16px;
+            --contact-section-padding: 72px 24px;
+            --contact-pane-padding: 48px 32px;
+          }
+        }
+        @media (max-width: 640px) {
+          #contact {
+            --contact-section-padding: 56px 16px;
+            --contact-pane-padding: 32px 20px;
+          }
+          #contact .display-name {
+            font-size: clamp(28px, 7vw, 48px) !important;
+          }
+        }
+        @media (pointer: coarse) {
+          #contact button,
+          #contact input,
+          #contact textarea {
+            cursor: auto !important;
+          }
+        }
         @keyframes scaleIn {
           from { opacity: 0; transform: scale(0.9); }
           to { opacity: 1; transform: scale(1); }

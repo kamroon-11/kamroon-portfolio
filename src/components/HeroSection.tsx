@@ -132,28 +132,7 @@ const adVideos = [
 ];
 
 function SponsoredAdCarousel({ isMobile }: { isMobile: boolean }) {
-  const [current, setCurrent] = useState(0);
-  const trackRef = useRef<HTMLDivElement>(null);
-
-  /* Auto-swipe every 4s */
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrent((prev) => (prev + 1) % adVideos.length);
-    }, 4000);
-    return () => clearInterval(timer);
-  }, []);
-
-  /* Animate slide */
-  useEffect(() => {
-    if (trackRef.current) {
-      gsap.to(trackRef.current, {
-        x: `${-current * 100}%`,
-        duration: 0.6,
-        ease: "power3.inOut",
-      });
-    }
-  }, [current]);
-
+  const vid = adVideos[0];
   return (
     <div
       style={{
@@ -168,7 +147,6 @@ function SponsoredAdCarousel({ isMobile }: { isMobile: boolean }) {
         margin: isMobile ? "0 auto" : "0",
       }}
     >
-      {/* Top badges row */}
       <div
         style={{
           display: "flex",
@@ -209,54 +187,38 @@ function SponsoredAdCarousel({ isMobile }: { isMobile: boolean }) {
         </span>
       </div>
 
-      {/* Video slider */}
       <div style={{ overflow: "hidden", position: "relative" }}>
-        <div
-          ref={trackRef}
-          style={{
-            display: "flex",
-            width: `${adVideos.length * 100}%`,
-          }}
-        >
-          {adVideos.map((vid, i) => (
-            <div key={i} style={{ width: "100%", flexShrink: 0 }}>
-              <div
+        <div style={{ width: "100%" }}>
+          <div style={{ width: "100%" }}>
+            <div
+              style={{
+                position: "relative",
+                width: "100%",
+                background: "var(--cream-dark)",
+              }}
+            >
+              <video
+                src={vid.src}
+                autoPlay
+                muted
+                loop
+                playsInline
+                controls={false}
+                controlsList="nodownload noplaybackrate nofullscreen"
+                onContextMenu={(e) => e.preventDefault()}
+                preload="auto"
+                disablePictureInPicture
                 style={{
-                  position: "relative",
                   width: "100%",
-                  aspectRatio: isMobile ? "16 / 9" : "16 / 9",
-                  background: "var(--cream-dark)",
+                  height: "auto",
+                  objectFit: "contain",
+                  display: "block",
                 }}
-              >
-                <video
-                  src={vid.src}
-                  autoPlay
-                  muted
-                  loop
-                  playsInline
-                  controls={false}
-                  controlsList="nodownload noplaybackrate nofullscreen"
-                  onContextMenu={(e) => e.preventDefault()}
-                  preload="auto"
-                  disablePictureInPicture
-                  style={{
-                    position: "absolute",
-                    inset: 0,
-                    width: "100%",
-                    height: "100%",
-                    objectFit: "cover",
-                    display: "block",
-                    filter: "contrast(104%) saturate(104%)",
-                    transform: "translateZ(0)",
-                    backfaceVisibility: "hidden",
-                  }}
-                />
-              </div>
+              />
             </div>
-          ))}
+          </div>
         </div>
 
-        {/* Current label overlay */}
         <div
           style={{
             position: "absolute",
@@ -272,38 +234,20 @@ function SponsoredAdCarousel({ isMobile }: { isMobile: boolean }) {
             textTransform: "uppercase",
           }}
         >
-          ▶ {adVideos[current].label}
+          ▶ {vid.label}
         </div>
       </div>
 
-      {/* Bottom bar */}
       <div
         style={{
           borderTop: "3px solid var(--black)",
           padding: "8px 10px",
           display: "flex",
-          justifyContent: "space-between",
+          justifyContent: "flex-end",
           alignItems: "center",
+          gap: "8px",
         }}
       >
-        {/* Slide dots */}
-        <div style={{ display: "flex", gap: "4px" }}>
-          {adVideos.map((_, i) => (
-            <div
-              key={i}
-              onClick={() => setCurrent(i)}
-              style={{
-                width: i === current ? "12px" : "5px",
-                height: "5px",
-                background: i === current ? "var(--mustard)" : "var(--cream-dark)",
-                border: "2px solid var(--black)",
-                cursor: "pointer",
-                transition: "all 0.3s ease",
-              }}
-            />
-          ))}
-        </div>
-
         <button
           className="nb-btn"
           style={{ padding: "3px 6px", fontSize: "8px" }}
@@ -311,7 +255,7 @@ function SponsoredAdCarousel({ isMobile }: { isMobile: boolean }) {
             document.getElementById("projects")?.scrollIntoView({ behavior: "smooth" })
           }
         >
-          Play All
+          View
         </button>
       </div>
     </div>

@@ -730,7 +730,8 @@ export default function HeroSection() {
               gap: isMobile ? "20px" : "20px",
               flexDirection: isMobile ? "column" : "row",
               alignItems: "flex-start",
-              marginLeft: isMobile ? "0" : "-120px",
+              marginLeft: isMobile ? "0" : "0",
+              justifySelf: "end",
             }}
           >
             {/* (Removed Sponsored Ad) */}
@@ -764,36 +765,6 @@ export default function HeroSection() {
                   background: "linear-gradient(135deg, #f1e9ff 0%, #fff8e7 100%)",
                 }}
               >
-                {/* Overlay tech badges */}
-                <div
-                  style={{
-                    position: "absolute",
-                    top: "10px",
-                    left: "10px",
-                    display: "flex",
-                    gap: "6px",
-                    zIndex: 2,
-                  }}
-                >
-                  {["GSAP", "Framer"].map((t) => (
-                    <span
-                      key={t}
-                      style={{
-                        fontSize: isMobile ? "9px" : "10px",
-                        fontWeight: 800,
-                        letterSpacing: "0.08em",
-                        textTransform: "uppercase",
-                        background: "var(--black)",
-                        color: "var(--mustard)",
-                        border: "2px solid var(--black)",
-                        padding: "4px 8px",
-                        boxShadow: "2px 2px 0 var(--mustard)",
-                      }}
-                    >
-                      {t}
-                    </span>
-                  ))}
-                </div>
                 {/* Fallback avatar */}
                 <div
                   style={{
@@ -979,12 +950,12 @@ export default function HeroSection() {
                 <FloatingTag
                   label="GSAP"
                   delay={0}
-                  style={{ top: "-16px", right: "-20px", transform: "rotate(6deg)" }}
+                  style={{ top: "-20px", right: "-16px", transform: "rotate(6deg)" }}
                 />
                 <FloatingTag
                   label="Framer"
                   delay={0.4}
-                  style={{ top: "50%", right: "-50px", transform: "rotate(-4deg)" }}
+                  style={{ top: "42%", right: "-24px", transform: "rotate(-4deg)" }}
                 />
               </>
             )}

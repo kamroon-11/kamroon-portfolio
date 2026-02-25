@@ -162,7 +162,8 @@ function SponsoredAdCarousel({ isMobile }: { isMobile: boolean }) {
         background: "var(--cream)",
         boxShadow: "6px 6px 0 var(--black)",
         overflow: "hidden",
-        width: isMobile ? "280px" : "240px",
+        width: isMobile ? "100%" : "320px",
+        maxWidth: "360px",
         flexShrink: 0,
         margin: isMobile ? "0 auto" : "0",
       }}
@@ -219,23 +220,38 @@ function SponsoredAdCarousel({ isMobile }: { isMobile: boolean }) {
         >
           {adVideos.map((vid, i) => (
             <div key={i} style={{ width: "100%", flexShrink: 0 }}>
-              <video
-                src={vid.src}
-                autoPlay
-                muted
-                loop
-                playsInline
-                controls={false}
-                controlsList="nodownload noplaybackrate nofullscreen"
-                onContextMenu={(e) => e.preventDefault()}
-                preload="metadata"
+              <div
                 style={{
+                  position: "relative",
                   width: "100%",
-                  height: isMobile ? "200px" : "220px",
-                  objectFit: "cover",
-                  display: "block",
+                  aspectRatio: isMobile ? "16 / 9" : "16 / 9",
+                  background: "var(--cream-dark)",
                 }}
-              />
+              >
+                <video
+                  src={vid.src}
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  controls={false}
+                  controlsList="nodownload noplaybackrate nofullscreen"
+                  onContextMenu={(e) => e.preventDefault()}
+                  preload="auto"
+                  disablePictureInPicture
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                    display: "block",
+                    filter: "contrast(105%) saturate(105%)",
+                    transform: "translateZ(0)",
+                    backfaceVisibility: "hidden",
+                  }}
+                />
+              </div>
             </div>
           ))}
         </div>
